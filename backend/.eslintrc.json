@@ -1,0 +1,30 @@
+{
+  "extends": ["airbnb-base", "prettier", "plugin:node/recommended"],
+  "plugins": ["node", "import"],
+  "env": {
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2020
+  },
+  "settings": {
+    "node": {
+      "version": ">=20.0.0"
+    }
+  },
+  "rules": {
+    "no-console": "warn",
+    "no-unused-vars": [
+      "warn",
+      { "argsIgnorePattern": "req|res|next|val" }
+    ],
+    "no-process-exit": "off",
+    "no-param-reassign": [
+      "error",
+      { "props": false }
+    ],
+    "node/no-unsupported-features/es-syntax": "off",
+    "no-underscore-dangle": ["error", { "allow": ["_id"] }],
+    "consistent-return": "off"
+  }
+}

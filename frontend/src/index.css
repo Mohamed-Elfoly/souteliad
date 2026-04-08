@@ -1,0 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap');
+@import "./styles/theme.css";
+@import "tailwindcss";
+
+body {
+  margin: 0;
+  font-family: 'Rubik', sans-serif;
+  background-color: #ffffff;
+}
+
+/* Avatar component base styles */
+.avatar-img {
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  display: block;
+  border: 2.5px solid #EB6837;
+  box-shadow: 0 0 0 3px rgba(235, 104, 55, 0.12);
+}
+
+.avatar-initials {
+  border-radius: 50%;
+  background: #fde8df;
+  color: #EB6837;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2.5px solid #EB6837;
+  box-shadow: 0 0 0 3px rgba(235, 104, 55, 0.12);
+}
+
+.avatar-placeholder {
+  border-radius: 50%;
+  background: #fde8df;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 2.5px solid #EB6837;
+  box-shadow: 0 0 0 3px rgba(235, 104, 55, 0.12);
+}
+
+/* No border inside the navbar orange pill */
+.user-pill .avatar-img,
+.user-pill .avatar-initials,
+.user-pill .avatar-placeholder {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ========== Skeleton Loader ========== */
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  display: block;
+}
+
+.skeleton-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ========== Empty State ========== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 24px;
+  text-align: center;
+  direction: rtl;
+}
+
+.empty-state-icon {
+  width: 100px;
+  height: 100px;
+}
+
+.empty-state-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #373D41;
+  margin: 0;
+}
+
+.empty-state-desc {
+  font-size: 15px;
+  color: #868687;
+  margin: 0;
+  max-width: 300px;
+  line-height: 1.6;
+}
+
+.empty-state-btn {
+  background: #EB6837;
+  color: #fff;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 30px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'Rubik', sans-serif;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s ease;
+}
+
+.empty-state-btn:hover {
+  background: #c14c21;
+}
+
+/* ========== Accessibility: Focus ========== */
+:focus-visible {
+  outline: 2px solid #EB6837;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Dark mode — not yet implemented (design not ready) */

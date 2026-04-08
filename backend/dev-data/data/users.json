@@ -1,0 +1,42 @@
+[
+  {
+    "_id": "507f1f77bcf86cd799439011",
+    "firstName": "Admin",
+    "lastName": "System",
+    "email": "admin@sout-elyad.com",
+    "password": "password123",
+    "passwordConfirm": "password123",
+    "role": "admin",
+    "active": true
+  },
+  {
+    "_id": "507f1f77bcf86cd799439012",
+    "firstName": "Mai",
+    "lastName": "Awni",
+    "email": "teacher@sout-elyad.com",
+    "password": "password123",
+    "passwordConfirm": "password123",
+    "role": "teacher",
+    "active": true
+  },
+  {
+    "_id": "507f1f77bcf86cd799439013",
+    "firstName": "Youssef",
+    "lastName": "Omar",
+    "email": "user2@sout-elyad.com",
+    "password": "password123",
+    "passwordConfirm": "password123",
+    "role": "user",
+    "active": true
+  },
+  {
+    "_id": "507f1f77bcf86cd799439014",
+    "firstName": "Sara",
+    "lastName": "Ahmed",
+    "email": "sara@sout-elyad.com",
+    "password": "password123",
+    "passwordConfirm": "password123",
+    "role": "user",
+    "active": true
+  }
+]

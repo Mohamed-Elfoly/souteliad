@@ -1,0 +1,331 @@
+/* ===== Dashboard Auth Split Layout ===== */
+.dash-auth {
+  display: flex;
+  min-height: 100vh;
+  direction: rtl;
+  font-family: 'Rubik', sans-serif;
+}
+
+.dash-auth-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 60px;
+  background: #fff;
+}
+
+.dash-auth-illustration {
+  width: 420px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #FFF6EA;
+  padding: 40px;
+  flex-shrink: 0;
+}
+
+.dash-auth-illustration img {
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  border-radius: 16px;
+}
+
+/* ===== Logo ===== */
+.dash-auth-logo {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.dash-auth-logo img {
+  width: 80px;
+  height: auto;
+}
+
+.dash-auth-logo h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-title, #373D41);
+  margin: 8px 0 0;
+}
+
+/* ===== Form Content ===== */
+.dash-auth-content {
+  width: 100%;
+  max-width: 440px;
+}
+
+.dash-auth-content h3 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-title, #373D41);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.dash-auth-content p.desc {
+  font-size: 14px;
+  color: var(--color-subtitle, #666667);
+  text-align: center;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+/* ===== Input Fields ===== */
+.dash-input-group {
+  margin-bottom: 16px;
+}
+
+.dash-input-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-title, #373D41);
+  margin-bottom: 8px;
+  text-align: right;
+}
+
+.dash-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--color-stroke, #D1D5DB);
+  border-radius: 10px;
+  padding: 12px 16px;
+  background: #fff;
+  direction: rtl;
+}
+
+.dash-input-wrapper input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-family: inherit;
+  background: transparent;
+  text-align: right;
+  color: var(--color-title, #373D41);
+}
+
+.dash-input-wrapper input::placeholder {
+  color: var(--color-search-text, #9CA3AF);
+}
+
+.dash-input-wrapper svg {
+  color: var(--color-search-text, #9CA3AF);
+  flex-shrink: 0;
+}
+
+.dash-input-error {
+  color: #ef4444;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+/* ===== Login Options Row ===== */
+.dash-login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.dash-login-options .forgot {
+  font-size: 14px;
+  color: var(--color-primary, #EB6837);
+  cursor: pointer;
+  font-weight: 600;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+}
+
+.dash-login-options .remember {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--color-subtitle, #666667);
+}
+
+/* ===== Primary Button ===== */
+.dash-btn-primary {
+  width: 100%;
+  padding: 14px;
+  background: var(--color-primary, #EB6837);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+  margin-bottom: 12px;
+}
+
+.dash-btn-primary:hover {
+  background: #dc5727;
+}
+
+.dash-btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ===== Outline Button (back to login) ===== */
+.dash-btn-outline {
+  width: 100%;
+  padding: 14px;
+  background: #fff;
+  color: var(--color-primary, #EB6837);
+  border: 2px solid var(--color-primary, #EB6837);
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.dash-btn-outline:hover {
+  background: #fff8f5;
+}
+
+/* ===== Role Selection Cards ===== */
+.dash-role-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-title, #373D41);
+  margin-bottom: 4px;
+}
+
+.dash-role-subtitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-primary, #EB6837);
+  margin-bottom: 8px;
+}
+
+.dash-role-desc {
+  font-size: 14px;
+  color: var(--color-subtitle, #666667);
+  margin-bottom: 32px;
+}
+
+.dash-role-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 20px 24px;
+  border: 1px solid var(--color-stroke, #D1D5DB);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 16px;
+  text-align: center;
+  background: #fff;
+}
+
+.dash-role-card:hover {
+  border-color: var(--color-primary, #EB6837);
+  background: #fff8f5;
+}
+
+.dash-role-card h4 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-title, #373D41);
+  margin: 0 0 4px;
+}
+
+.dash-role-card p {
+  font-size: 14px;
+  color: var(--color-subtitle, #666667);
+  margin: 0;
+}
+
+/* ===== Verify Code Inputs ===== */
+.dash-code-inputs {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 24px;
+  direction: ltr;
+}
+
+.dash-code-inputs input {
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--color-stroke, #D1D5DB);
+  border-radius: 10px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  font-family: inherit;
+  color: var(--color-title, #373D41);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.dash-code-inputs input:focus {
+  border-color: var(--color-primary, #EB6837);
+}
+
+.dash-resend {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--color-subtitle, #666667);
+}
+
+.dash-resend button {
+  background: none;
+  border: none;
+  color: var(--color-primary, #EB6837);
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.dash-resend button:disabled {
+  color: var(--color-subtitle, #666667);
+  cursor: not-allowed;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 900px) {
+  .dash-auth {
+    flex-direction: column;
+  }
+
+  .dash-auth-illustration {
+    width: 100%;
+    min-height: auto;
+    padding: 30px;
+  }
+
+  .dash-auth-form {
+    padding: 30px 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .dash-auth-illustration {
+    display: none;
+  }
+
+  .dash-code-inputs input {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+}

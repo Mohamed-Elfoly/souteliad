@@ -1,0 +1,2394 @@
+{
+  "info": {
+    "name": "Sout-Elyad API",
+    "description": "Complete API collection for the Sout-Elyad Arabic Sign Language Learning Platform.\n\n## Test Accounts (after seeding)\n- Admin: admin@sout-elyad.com / password123\n- Teacher: teacher@sout-elyad.com / password123\n- Teacher2: teacher2@sout-elyad.com / password123\n- User: user@sout-elyad.com / password123\n- User2: user2@sout-elyad.com / password123\n\n## Setup\n1. Import this collection\n2. Import the Sout-Elyad.postman_environment.json\n3. Run `node dev-data/import-dev-data.js --delete && node dev-data/import-dev-data.js --import`\n4. Start server: `npm run dev`\n5. Run the flows in order (each folder is a flow)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [],
+  "item": [
+    {
+      "name": "00 - Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/health",
+              "host": ["{{URL}}"],
+              "path": ["health"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Status is success', () => {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res.status).to.eql('success');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 - Auth Flow",
+      "description": "**Flow**: Signup new user -> Login -> Get Me -> Update Me -> Update Password -> Forgot Password -> Logout\n\nRun these requests in order.",
+      "item": [
+        {
+          "name": "Signup New User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"New\",\n  \"lastName\": \"Student\",\n  \"email\": \"newstudent@test.com\",\n  \"password\": \"password123\",\n  \"passwordConfirm\": \"password123\",\n  \"phoneNum\": \"0599999999\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/users/signup",
+              "host": ["{{URL}}"],
+              "path": ["users", "signup"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const res = pm.response.json();",
+                  "pm.test('Token returned', () => pm.expect(res.token).to.be.a('string'));",
+                  "pm.test('Role is user', () => pm.expect(res.data.user.role).to.eql('user'));",
+                  "pm.environment.set('userToken', res.token);",
+                  "pm.environment.set('userId', res.data.user._id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Signup - Duplicate Email (should fail)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"New\",\n  \"lastName\": \"Student\",\n  \"email\": \"newstudent@test.com\",\n  \"password\": \"password123\",\n  \"passwordConfirm\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/users/signup",
+              "host": ["{{URL}}"],
+              "path": ["users", "signup"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Duplicate email rejected', () => {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([400, 500]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Signup - Password Mismatch (should fail)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"Fail\",\n  \"email\": \"fail@test.com\",\n  \"password\": \"password123\",\n  \"passwordConfirm\": \"differentpassword\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/users/signup",
+              "host": ["{{URL}}"],
+              "path": ["users", "signup"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Password mismatch rejected', () => {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([400, 500]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@sout-elyad.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/users/login",
+              "host": ["{{URL}}"],
+              "path": ["users", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Role is admin', () => pm.expect(res.data.user.role).to.eql('admin'));",
+                  "pm.environment.set('adminToken', res.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as Teacher",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"teacher@sout-elyad.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/users/login",
+              "host": ["{{URL}}"],
+              "path": ["users", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Role is teacher', () => pm.expect(res.data.user.role).to.eql('teacher'));",
+                  "pm.environment.set('teacherToken', res.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as User (Learner)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@sout-elyad.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/users/login",
+              "host": ["{{URL}}"],
+              "path": ["users", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Role is user', () => pm.expect(res.data.user.role).to.eql('user'));",
+                  "pm.environment.set('userToken', res.token);",
+                  "pm.environment.set('userId', res.data.user._id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - Wrong Password (should fail)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@sout-elyad.com\",\n  \"password\": \"wrongpassword\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/users/login",
+              "host": ["{{URL}}"],
+              "path": ["users", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Me (as User)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/users/me",
+              "host": ["{{URL}}"],
+              "path": ["users", "me"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Has user data', () => pm.expect(res.data.data.email).to.exist);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Me - No Token (should fail 401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/users/me",
+              "host": ["{{URL}}"],
+              "path": ["users", "me"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Me",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"FatimaUpdated\",\n  \"phoneNum\": \"0569999999\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/users/updateMe",
+              "host": ["{{URL}}"],
+              "path": ["users", "updateMe"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Name updated', () => pm.expect(res.data.user.firstName).to.eql('FatimaUpdated'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Password",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"passwordCurrent\": \"password123\",\n  \"password\": \"newpassword123\",\n  \"passwordConfirm\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/users/updateMyPassword",
+              "host": ["{{URL}}"],
+              "path": ["users", "updateMyPassword"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('New token returned', () => pm.expect(res.token).to.be.a('string'));",
+                  "pm.environment.set('userToken', res.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@sout-elyad.com\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/users/forgotPassword",
+              "host": ["{{URL}}"],
+              "path": ["users", "forgotPassword"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Token sent message', () => {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res.message).to.include('Token sent');",
+                  "});",
+                  "// NOTE: Check the server console for the reset URL"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/users/logout",
+              "host": ["{{URL}}"],
+              "path": ["users", "logout"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Admin User Management",
+      "description": "**Flow**: Admin gets all users -> gets single user -> updates user role -> deletes user\n\nRequires: Admin logged in (run 01 first).",
+      "item": [
+        {
+          "name": "Get All Users (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/users",
+              "host": ["{{URL}}"],
+              "path": ["users"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Has results', () => pm.expect(res.results).to.be.greaterThan(0));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Users (User - should fail 403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/users",
+              "host": ["{{URL}}"],
+              "path": ["users"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Single User (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/users/{{userId}}",
+              "host": ["{{URL}}"],
+              "path": ["users", "{{userId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Me (Soft Delete as User)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/users/deleteMe",
+              "host": ["{{URL}}"],
+              "path": ["users", "deleteMe"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - Levels & Lessons Flow",
+      "description": "**Flow**: Teacher creates level -> creates lessons in level -> Learner browses levels -> views level with lessons -> views nested lessons -> views single lesson\n\nRequires: Teacher and User logged in.",
+      "item": [
+        {
+          "name": "Create Level (Teacher)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test Level - Alphabet Review\",\n  \"description\": \"Review all Arabic sign language alphabet letters\",\n  \"levelOrder\": 5\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/levels",
+              "host": ["{{URL}}"],
+              "path": ["levels"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const res = pm.response.json();",
+                  "pm.environment.set('levelId', res.data.data._id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Level (User - should fail 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Unauthorized Level\",\n  \"levelOrder\": 99\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/levels",
+              "host": ["{{URL}}"],
+              "path": ["levels"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Lesson in Level (Teacher - Nested)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Alif to Ya Review\",\n  \"description\": \"Complete review of all Arabic alphabet signs\",\n  \"videoUrl\": \"https://example.com/videos/alif-ya-review.mp4\",\n  \"lessonOrder\": 1\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/levels/{{levelId}}/lessons",
+              "host": ["{{URL}}"],
+              "path": ["levels", "{{levelId}}", "lessons"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const res = pm.response.json();",
+                  "pm.test('levelId set from params', () => pm.expect(res.data.data.levelId).to.exist);",
+                  "pm.test('teacherId set from user', () => pm.expect(res.data.data.teacherId).to.exist);",
+                  "pm.environment.set('lessonId', res.data.data._id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Levels (Learner)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/levels",
+              "host": ["{{URL}}"],
+              "path": ["levels"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Has levels', () => pm.expect(res.results).to.be.greaterThan(0));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Level with Lessons (populate)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/levels/{{levelId}}",
+              "host": ["{{URL}}"],
+              "path": ["levels", "{{levelId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Has lessons array', () => pm.expect(res.data.data.lessons).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Lessons for Level (Nested Route)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/levels/{{levelId}}/lessons",
+              "host": ["{{URL}}"],
+              "path": ["levels", "{{levelId}}", "lessons"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Lessons (Top-Level)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/lessons",
+              "host": ["{{URL}}"],
+              "path": ["lessons"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Single Lesson (with quizzes)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/lessons/{{lessonId}}",
+              "host": ["{{URL}}"],
+              "path": ["lessons", "{{lessonId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Level (Teacher)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated description for alphabet review level\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/levels/{{levelId}}",
+              "host": ["{{URL}}"],
+              "path": ["levels", "{{levelId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 - Quiz System Flow",
+      "description": "**Flow**: Teacher creates quiz -> adds MCQ, True-False, and AI Practice questions -> Learner views quiz -> submits answers (AI practice scored by mock AI automatically) -> all 3 types count toward 60% pass -> views attempt history\n\nRequires: Lesson created (run 03 first).",
+      "item": [
+        {
+          "name": "Create Quiz (Teacher - Nested under Lesson)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Alphabet Review Quiz\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/lessons/{{lessonId}}/quizzes",
+              "host": ["{{URL}}"],
+              "path": ["lessons", "{{lessonId}}", "quizzes"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const res = pm.response.json();",
+                  "pm.environment.set('quizId', res.data.data._id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add Question 1 (MCQ)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"questionText\": \"What sign represents Alif?\",\n  \"questionType\": \"mcq\",\n  \"marks\": 2,\n  \"options\": [\n    { \"text\": \"Open palm forward\", \"isCorrect\": true },\n    { \"text\": \"Closed fist\", \"isCorrect\": false },\n    { \"text\": \"Pointing up\", \"isCorrect\": false }\n  ],\n  \"quizId\": \"{{quizId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/questions",
+              "host": ["{{URL}}"],
+              "path": ["questions"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const res = pm.response.json();",
+                  "pm.environment.set('questionId', res.data.data._id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add Question 2 (True-False)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"questionText\": \"Ba is signed with a flat hand.\",\n  \"questionType\": \"true-false\",\n  \"marks\": 1,\n  \"options\": [\n    { \"text\": \"True\", \"isCorrect\": true },\n    { \"text\": \"False\", \"isCorrect\": false }\n  ],\n  \"quizId\": \"{{quizId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/questions",
+              "host": ["{{URL}}"],
+              "path": ["questions"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add Question 3 (AI Practice)",
+          "description": "Adds an AI practice question. This question requires the learner to perform a sign via camera. The mock AI evaluates it automatically during quiz submission.",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"questionText\": \"Practice: Show me the sign for Alif\",\n  \"questionType\": \"ai-practice\",\n  \"marks\": 3,\n  \"expectedSign\": \"alif\",\n  \"quizId\": \"{{quizId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/questions",
+              "host": ["{{URL}}"],
+              "path": ["questions"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const res = pm.response.json();",
+                  "pm.test('Type is ai-practice', () => pm.expect(res.data.data.questionType).to.eql('ai-practice'));",
+                  "pm.test('Has expectedSign', () => pm.expect(res.data.data.expectedSign).to.eql('alif'));",
+                  "pm.environment.set('aiQuestionId', res.data.data._id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Quiz with Questions (Learner)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/quizzes/{{quizId}}",
+              "host": ["{{URL}}"],
+              "path": ["quizzes", "{{quizId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Has questions', () => pm.expect(res.data.data.questions).to.be.an('array'));",
+                  "pm.test('3 questions (MCQ + TF + AI)', () => pm.expect(res.data.data.questions.length).to.eql(3));",
+                  "// Save question IDs for submitting answers",
+                  "const questions = res.data.data.questions;",
+                  "if (questions && questions.length > 0) {",
+                  "  pm.environment.set('questionId', questions[0]._id);",
+                  "  if (questions.length > 1) pm.environment.set('question2Id', questions[1]._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Questions for Quiz (Nested Route)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/quizzes/{{quizId}}/questions",
+              "host": ["{{URL}}"],
+              "path": ["quizzes", "{{quizId}}", "questions"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit Quiz (Learner - Mixed: MCQ + TF + AI)",
+          "description": "Submits MCQ and True-False answers. For AI practice, the backend looks up the user's saved result from the video upload step (POST /ai-practice/:questionId). All 3 types count toward 60%.\n\n**Important**: Run 'Upload Video & Evaluate Sign' in folder 10 BEFORE this request so the AI result exists.\n\nTotal marks: MCQ(2) + TF(1) + AI(3) = 6. Pass = 60% = 3.6 marks.",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quizId\": \"{{quizId}}\",\n  \"answers\": [\n    { \"questionId\": \"{{questionId}}\", \"selectedOptionId\": 0 },\n    { \"questionId\": \"{{question2Id}}\", \"selectedOptionId\": 0 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/quiz-attempts",
+              "host": ["{{URL}}"],
+              "path": ["quiz-attempts"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const res = pm.response.json();",
+                  "pm.test('Has score', () => pm.expect(res.data.data.score).to.be.a('number'));",
+                  "pm.test('Has totalMarks', () => pm.expect(res.data.data.totalMarks).to.be.a('number'));",
+                  "pm.test('Has passed flag', () => pm.expect(res.data.data.passed).to.be.a('boolean'));",
+                  "pm.test('Has aiResults', () => pm.expect(res.data.aiResults).to.be.an('array'));",
+                  "pm.test('AI result has accuracy', () => pm.expect(res.data.aiResults[0].accuracy).to.be.a('number'));",
+                  "pm.environment.set('attemptId', res.data.data._id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get My Attempts (Learner)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/quiz-attempts/my-attempts",
+              "host": ["{{URL}}"],
+              "path": ["quiz-attempts", "my-attempts"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Has attempts', () => pm.expect(res.results).to.be.greaterThan(0));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Single Attempt",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/quiz-attempts/{{attemptId}}",
+              "host": ["{{URL}}"],
+              "path": ["quiz-attempts", "{{attemptId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 - Progress Tracking Flow",
+      "description": "**Flow**: Learner marks lesson complete -> views own progress -> Teacher views learner's progress\n\nRequires: Lesson exists (run 03 first).",
+      "item": [
+        {
+          "name": "Mark Lesson Complete (Learner)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lessonId\": \"{{lessonId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/progress",
+              "host": ["{{URL}}"],
+              "path": ["progress"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mark Same Lesson Again (should fail - duplicate)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lessonId\": \"{{lessonId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/progress",
+              "host": ["{{URL}}"],
+              "path": ["progress"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Duplicate rejected', () => {",
+                  "  pm.expect(pm.response.code).to.eql(400);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get My Progress (Learner)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/progress/my-progress",
+              "host": ["{{URL}}"],
+              "path": ["progress", "my-progress"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Has progress entries', () => pm.expect(res.results).to.be.greaterThan(0));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get User Progress (Teacher)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/progress/user/{{userId}}",
+              "host": ["{{URL}}"],
+              "path": ["progress", "user", "{{userId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get User Progress (Learner - should fail 403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/progress/user/{{userId}}",
+              "host": ["{{URL}}"],
+              "path": ["progress", "user", "{{userId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 - Community Flow",
+      "description": "**Flow**: User creates post -> teacher comments -> user creates own comment -> user2 creates comment -> user1 tries to delete user2's comment (fails 403) -> user1 deletes own comment (success) -> teacher moderates/deletes user2's comment (success) -> likes/unlikes post -> reports post -> teacher reviews\n\n**Tests comment deletion permissions**: Only owner, teacher, or admin can delete comments.\n\nRequires: Users logged in.",
+      "item": [
+        {
+          "name": "Create Post (Learner)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Just finished the Basics level! The sign for Alif was tricky but I got it now.\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/posts",
+              "host": ["{{URL}}"],
+              "path": ["posts"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const res = pm.response.json();",
+                  "pm.environment.set('postId', res.data.data._id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Posts",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/posts",
+              "host": ["{{URL}}"],
+              "path": ["posts"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Has posts', () => pm.expect(res.results).to.be.greaterThan(0));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add Comment on Post (Nested Route)",
+          "description": "**Teacher encourages learner** - Demonstrates that any authenticated role (user/teacher/admin) can comment. Using teacher token here to show cross-role interaction.",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Great job! Keep practicing and you will master it.\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/posts/{{postId}}/comments",
+              "host": ["{{URL}}"],
+              "path": ["posts", "{{postId}}", "comments"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const res = pm.response.json();",
+                  "pm.environment.set('commentId', res.data.data._id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Comments for Post (Nested Route)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/posts/{{postId}}/comments",
+              "host": ["{{URL}}"],
+              "path": ["posts", "{{postId}}", "comments"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "User Creates Own Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"This is my comment - User1\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/posts/{{postId}}/comments",
+              "host": ["{{URL}}"],
+              "path": ["posts", "{{postId}}", "comments"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const res = pm.response.json();",
+                  "pm.environment.set('userCommentId', res.data.data._id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as User2",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user2@sout-elyad.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/users/login",
+              "host": ["{{URL}}"],
+              "path": ["users", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.environment.set('user2Token', res.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "User2 Creates Own Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{user2Token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"This is my comment - User2\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/posts/{{postId}}/comments",
+              "host": ["{{URL}}"],
+              "path": ["posts", "{{postId}}", "comments"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const res = pm.response.json();",
+                  "pm.environment.set('user2CommentId', res.data.data._id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "User1 Tries to Delete User2's Comment (should FAIL 403)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/comments/{{user2CommentId}}",
+              "host": ["{{URL}}"],
+              "path": ["comments", "{{user2CommentId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403 Forbidden', () => pm.response.to.have.status(403));",
+                  "const res = pm.response.json();",
+                  "pm.test('Error message about permission', () => {",
+                  "  pm.expect(res.message).to.include('permission');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "User1 Deletes Own Comment (should SUCCESS 204)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/comments/{{userCommentId}}",
+              "host": ["{{URL}}"],
+              "path": ["comments", "{{userCommentId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204 No Content', () => pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Teacher Deletes User2's Comment (Moderation - should SUCCESS)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/comments/{{user2CommentId}}",
+              "host": ["{{URL}}"],
+              "path": ["comments", "{{user2CommentId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204 No Content (Teacher can moderate)', () => pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Like Post (Toggle ON)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/posts/{{postId}}/likes",
+              "host": ["{{URL}}"],
+              "path": ["posts", "{{postId}}", "likes"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Liked = true', () => pm.expect(res.data.liked).to.be.true);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Unlike Post (Toggle OFF - same endpoint)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/posts/{{postId}}/likes",
+              "host": ["{{URL}}"],
+              "path": ["posts", "{{postId}}", "likes"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Liked = false (unliked)', () => pm.expect(res.data.liked).to.be.false);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Like Post Again (for the get post test)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/posts/{{postId}}/likes",
+              "host": ["{{URL}}"],
+              "path": ["posts", "{{postId}}", "likes"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Liked again', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Post with Comments & Likes",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/posts/{{postId}}",
+              "host": ["{{URL}}"],
+              "path": ["posts", "{{postId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Has comments', () => pm.expect(res.data.data.comments).to.be.an('array'));",
+                  "pm.test('Has likes', () => pm.expect(res.data.data.likes).to.be.an('array'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Report Post (Learner)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"This post contains misleading sign information\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/posts/{{postId}}/reports",
+              "host": ["{{URL}}"],
+              "path": ["posts", "{{postId}}", "reports"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Reports (Teacher)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/reports",
+              "host": ["{{URL}}"],
+              "path": ["reports"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Post (Edit own)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Updated: Just finished the Basics level! It was amazing!\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/posts/{{postId}}",
+              "host": ["{{URL}}"],
+              "path": ["posts", "{{postId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "07 - Notifications Flow",
+      "description": "**Flow**: Teacher creates notification for user -> User views notifications -> checks unread count -> marks as read -> checks count again\n\nRequires: Users logged in.",
+      "item": [
+        {
+          "name": "Create Notification (Teacher)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{teacherToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"lesson\",\n  \"message\": \"New lesson 'Alif to Ya Review' is now available!\",\n  \"link\": \"/lessons/{{lessonId}}\",\n  \"userId\": \"{{userId}}\",\n  \"teacherId\": \"5c8a1dfa2f8fb814b56fa181\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/notifications",
+              "host": ["{{URL}}"],
+              "path": ["notifications"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const res = pm.response.json();",
+                  "pm.environment.set('notificationId', res.data.data._id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Notification (User - should fail 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"system\",\n  \"message\": \"Unauthorized notification\",\n  \"userId\": \"{{userId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{URL}}/notifications",
+              "host": ["{{URL}}"],
+              "path": ["notifications"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 403', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Unread Count (User)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/notifications/unread-count",
+              "host": ["{{URL}}"],
+              "path": ["notifications", "unread-count"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Has unread count', () => pm.expect(res.data.unreadCount).to.be.a('number'));",
+                  "pm.test('At least 1 unread', () => pm.expect(res.data.unreadCount).to.be.greaterThan(0));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get My Notifications (User)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/notifications",
+              "host": ["{{URL}}"],
+              "path": ["notifications"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Has notifications', () => pm.expect(res.results).to.be.greaterThan(0));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mark Notification as Read (User)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/notifications/{{notificationId}}",
+              "host": ["{{URL}}"],
+              "path": ["notifications", "{{notificationId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Read = true', () => pm.expect(res.data.data.read).to.be.true);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Unread Count After Read (User)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/notifications/unread-count",
+              "host": ["{{URL}}"],
+              "path": ["notifications", "unread-count"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Count decreased', () => pm.expect(res.data.unreadCount).to.eql(0));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "08 - Seeded Data Queries",
+      "description": "**Flow**: Query all seeded data to verify the database seeding script worked correctly.\n\nRequires: Data seeded with `node dev-data/import-dev-data.js --import`.",
+      "item": [
+        {
+          "name": "Get Seeded Levels (4 expected)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/levels",
+              "host": ["{{URL}}"],
+              "path": ["levels"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('4 seeded levels', () => pm.expect(res.results).to.be.at.least(4));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Seeded Lessons (8 expected)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/lessons",
+              "host": ["{{URL}}"],
+              "path": ["lessons"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('8 seeded lessons', () => pm.expect(res.results).to.be.at.least(8));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Seeded Quizzes (4 expected)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/quizzes",
+              "host": ["{{URL}}"],
+              "path": ["quizzes"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('4 seeded quizzes', () => pm.expect(res.results).to.be.at.least(4));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Seeded Questions (16 expected)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/questions",
+              "host": ["{{URL}}"],
+              "path": ["questions"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('16 seeded questions', () => pm.expect(res.results).to.be.at.least(16));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Seeded Posts (5 expected)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/posts",
+              "host": ["{{URL}}"],
+              "path": ["posts"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('5 seeded posts', () => pm.expect(res.results).to.be.at.least(5));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Basics Level Lessons (Nested, 2 expected)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/levels/5c88fa8cf4afda39709c2951/lessons",
+              "host": ["{{URL}}"],
+              "path": ["levels", "5c88fa8cf4afda39709c2951", "lessons"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('2 lessons in Basics', () => pm.expect(res.results).to.eql(2));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Letters Quiz Questions (Nested, 4 expected)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/quizzes/5c88fa8cf4afda39709c2971/questions",
+              "host": ["{{URL}}"],
+              "path": ["quizzes", "5c88fa8cf4afda39709c2971", "questions"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('4 questions in Letters quiz', () => pm.expect(res.results).to.eql(4));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "09 - API Features (Filter, Sort, Paginate)",
+      "description": "**Flow**: Test the APIFeatures utility — filtering, sorting, field limiting, pagination.",
+      "item": [
+        {
+          "name": "Filter Lessons by Level",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/lessons?levelId=5c88fa8cf4afda39709c2951",
+              "host": ["{{URL}}"],
+              "path": ["lessons"],
+              "query": [
+                { "key": "levelId", "value": "5c88fa8cf4afda39709c2951" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Filtered to Basics level', () => pm.expect(res.results).to.eql(2));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sort Levels by Order (ascending)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/levels?sort=levelOrder",
+              "host": ["{{URL}}"],
+              "path": ["levels"],
+              "query": [
+                { "key": "sort", "value": "levelOrder" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('First level is order 1', () => pm.expect(res.data.data[0].levelOrder).to.eql(1));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Limit Fields (only title and description)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/levels?fields=title,description",
+              "host": ["{{URL}}"],
+              "path": ["levels"],
+              "query": [
+                { "key": "fields", "value": "title,description" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Has title', () => pm.expect(res.data.data[0].title).to.exist);",
+                  "pm.test('No levelOrder', () => pm.expect(res.data.data[0].levelOrder).to.not.exist);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Paginate (page 1, limit 2)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/lessons?page=1&limit=2",
+              "host": ["{{URL}}"],
+              "path": ["lessons"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "2" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Max 2 results', () => pm.expect(res.results).to.be.at.most(2));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Paginate (page 2, limit 2)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/lessons?page=2&limit=2",
+              "host": ["{{URL}}"],
+              "path": ["lessons"],
+              "query": [
+                { "key": "page", "value": "2" },
+                { "key": "limit", "value": "2" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Page 2 has results', () => pm.expect(res.results).to.be.greaterThan(0));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "10 - AI Practice (Video Upload)",
+      "description": "**Flow**: User opens camera -> records sign -> uploads video to AI endpoint -> gets feedback -> result is saved and used in quiz scoring.\n\n**How to test**: In Postman, select the 'video' field in Body > form-data, change type to 'File', and select any video file.\n\nRequires: Data seeded and user logged in. Run '04 - Quiz System Flow' first to set aiQuestionId.",
+      "item": [
+        {
+          "name": "Upload Video & Evaluate Sign",
+          "description": "Upload a video file of the sign. The mock AI returns random accuracy 70-100% and pass/fail (>= 80%). Result is saved to DB and used when submitting the quiz.\n\n**In Postman**: Body > form-data > key: 'video' (type: File) > select a .mp4 file.",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video",
+                  "type": "file",
+                  "src": "",
+                  "description": "Select a video file (.mp4, .webm, .mov)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{URL}}/ai-practice/{{aiQuestionId}}",
+              "host": ["{{URL}}"],
+              "path": ["ai-practice", "{{aiQuestionId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Has resultId', () => pm.expect(res.data.resultId).to.be.a('string'));",
+                  "pm.test('Has accuracy', () => pm.expect(res.data.accuracy).to.be.a('number'));",
+                  "pm.test('Accuracy 70-100', () => {",
+                  "  pm.expect(res.data.accuracy).to.be.at.least(70);",
+                  "  pm.expect(res.data.accuracy).to.be.at.most(100);",
+                  "});",
+                  "pm.test('Has passed flag', () => pm.expect(res.data.passed).to.be.a('boolean'));",
+                  "pm.test('Has feedback', () => pm.expect(res.data.feedback).to.be.a('string'));",
+                  "pm.test('Has expectedSign', () => pm.expect(res.data.expectedSign).to.be.a('string'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "No Video Upload (should fail 400)",
+          "description": "Sending without a video file should fail.",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/ai-practice/{{aiQuestionId}}",
+              "host": ["{{URL}}"],
+              "path": ["ai-practice", "{{aiQuestionId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "const res = pm.response.json();",
+                  "pm.test('Error about video', () => {",
+                  "  pm.expect(res.message).to.include('upload a video');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get My Practice Results",
+          "description": "Get the user's practice history for this AI question.",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": {
+              "raw": "{{URL}}/ai-practice/{{aiQuestionId}}/my-results",
+              "host": ["{{URL}}"],
+              "path": ["ai-practice", "{{aiQuestionId}}", "my-results"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Has results', () => pm.expect(res.results).to.be.at.least(1));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "No Auth (should fail 401)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{URL}}/ai-practice/{{aiQuestionId}}",
+              "host": ["{{URL}}"],
+              "path": ["ai-practice", "{{aiQuestionId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

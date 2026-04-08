@@ -1,0 +1,354 @@
+/* ===== Overlay ===== */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+/* ===== Modal ===== */
+
+.success-modal {
+  background: #f1f1f1;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 25px;
+  padding: 40px 20px;
+  text-align: center;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.success-modal img {
+  width: 220px;
+  margin-bottom: 20px;
+}
+
+.success-modal h2 {
+  font-size: 28px;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+.success-modal p {
+  font-size: 18px;
+  margin-bottom: 25px;
+  color: #555;
+}
+
+.modal-btn {
+  background: #EB6837;
+  color: #fff;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 30px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.modal-btn:hover {
+  background: #d8572c;
+}
+
+/* ===== Animation ===== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.playvideo-page {
+  /* min-height: 100vh; */
+  width: 100%;
+  height: 100%;
+  background: #f0f0f0;
+  border-radius: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.video-container {
+  width: 100%;
+  height: 100%;
+  background: #E8D9B5;
+  border-radius: 25px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.camera-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camera-box {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #E8D9B5;
+  border-radius: 25px;
+  overflow: hidden;
+  min-height: 220px;
+}
+
+/* ── Live feed wrapper ── */
+.camera-feed-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+}
+
+.camera-feed-wrap .camera-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 25px;
+  display: block;
+}
+
+/* ── Countdown overlay ── */
+.camera-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 25px;
+  pointer-events: none;
+}
+
+/* Pulsing red recording dot */
+.rec-dot {
+  width: 12px;
+  height: 12px;
+  background: #ef4444;
+  border-radius: 50%;
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  animation: rec-pulse 1s infinite;
+}
+
+@keyframes rec-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(1.4); }
+}
+
+/* Countdown number */
+.rec-countdown {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  z-index: 1;
+}
+
+.rec-label {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 0.03em;
+}
+
+/* SVG progress ring */
+.rec-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.18;
+}
+
+.rec-ring-bg {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 4;
+}
+
+.rec-ring-fill {
+  fill: none;
+  stroke: #EB6837;
+  stroke-width: 4;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  transition: stroke-dashoffset 0.9s linear;
+}
+
+/* ── Recording progress bar (below camera) ── */
+.rec-progress-wrap {
+  height: 5px;
+  background: #f0ede9;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.rec-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #EB6837, #f5a37a);
+  border-radius: 10px;
+  transition: width 0.9s linear;
+}
+
+/* ── Done state ── */
+.camera-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+}
+
+.camera-done-icon {
+  width: 52px;
+  height: 52px;
+  background: #22c55e;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: #fff;
+  font-weight: 700;
+  animation: done-pop 0.4s cubic-bezier(.34,1.56,.64,1);
+}
+
+@keyframes done-pop {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.camera-done p {
+  font-size: 0.9rem;
+  color: #555;
+  font-weight: 600;
+}
+
+/* ── Idle placeholder ── */
+.camera-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px;
+  color: #bbb;
+  font-size: 0.84rem;
+}
+
+/* ── Error message ── */
+.camera-error-msg {
+  color: #ef4444;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 16px;
+  direction: rtl;
+}
+
+/* ── Spinner in recording button ── */
+.rec-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Action row after recording ── */
+.rec-action-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.rec-action-row .prev-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Mirror effect ── */
+.camera-mirror {
+  transform: scaleX(-1);
+}
+
+/* ── Expected sign badge (overlay on live feed) ── */
+.expected-sign-badge {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(235, 104, 55, 0.9);
+  color: #fff;
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+
+.expected-sign-badge strong {
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+/* ── Pre-countdown overlay (distinct warm tint vs. recording dark) ── */
+.pre-overlay {
+  background: rgba(235, 104, 55, 0.45);
+}
+
+/* ── Pre-countdown number ── */
+.pre-count {
+  font-size: 5rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.55);
+  animation: pre-pop 0.35s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+@keyframes pre-pop {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+/* ── "استعد..." label ── */
+.pre-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}

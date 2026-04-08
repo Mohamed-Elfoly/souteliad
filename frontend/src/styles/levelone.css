@@ -1,0 +1,334 @@
+/* =========================================================
+   LEVELONE PAGE — Video Player
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+  font-family: "Rubik", sans-serif;
+}
+
+.lesson-page {
+  max-width: 1200px;
+  margin: auto;
+  background-color: white;
+  padding: 20px 60px 60px;
+  direction: rtl;
+}
+
+.lesson-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #868687;
+}
+
+/* Breadcrumb */
+.one_div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #868687;
+  font-size: 15px;
+  padding-bottom: 24px;
+}
+.lesson_one { color: #eb6837; font-weight: 600; }
+
+/* ── Video ── */
+.video-section {
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+  margin-bottom: 20px;
+  box-shadow: 0 6px 32px rgba(0, 0, 0, 0.18);
+}
+.video-iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: none;
+  display: block;
+}
+.no-video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  color: #aaa;
+  font-size: 18px;
+}
+
+/* ── Info bar below video ── */
+.video-info-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 0;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.video-info-left h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #373d41;
+  margin: 0 0 8px;
+}
+
+.video-info-dec{
+  font-size: 20px;
+  font-weight: 700;
+  color: rgba(55, 61, 65, 1);
+  margin-top: 15px ;
+  margin-bottom: 10px ;
+}
+
+.video-info-small{
+  color: rgba(134, 134, 135, 1);
+   line-height: 1.8;
+   font-size: 15px;
+}
+
+.video-meta {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  color: #868687;
+  font-size: 14px;
+}
+.video-meta span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Description ── */
+.video-description {
+  background: #fff8f5;
+  border: 1px solid #fddfd0;
+  border-radius: 14px;
+  padding: 22px 28px;
+  margin-bottom: 32px;
+}
+.video-description h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #373d41;
+  margin: 0 0 10px;
+}
+.video-description p {
+  color: #868687;
+  line-height: 1.8;
+  font-size: 15px;
+  margin: 0;
+}
+
+/* Features grid */
+.levelone-features-grid {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.levelone-feature-item {
+  display: flex;             
+  flex-direction: column;     
+  align-items: center;        
+  justify-content: center;  
+  text-align: center;
+  gap: 1px;
+  background: #fff8f5;
+  border: 1px solid #fddfd0;
+  border-radius: 8px;
+  padding: 10px 120px;
+}
+.levelone-feature-icon-wrap {
+  flex-shrink: 0;
+  border-radius: 10px;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.levelone-feature-item h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #373d41;
+  margin: 0 0 4px;
+}
+.levelone-feature-item p {
+  font-size: 13px;
+  color: #868687;
+  line-height: 1.5;
+  margin: 0;
+}
+/* ── Prominent Quiz CTA ── */
+.quiz-cta-card {
+  background: linear-gradient(135deg, #EB6837 0%, #c14c21 100%);
+  border-radius: 20px;
+  padding: 32px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+.quiz-cta-info h3 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 6px;
+}
+.quiz-cta-info p {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+  margin: 0;
+}
+.quiz-cta-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: transform 0.15s, box-shadow 0.15s;
+  font-family: "Rubik", sans-serif;
+}
+.quiz-cta-btn:hover:not(:disabled) {
+  transform: scale(1.04);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+.quiz-cta-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ── No-quiz neutral card ── */
+.quiz-no-quiz-card {
+  background: #f9fafb;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 32px 40px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+.full-text-btn {
+  background-color: #EB6837;
+  color: white;
+  font-size: 16px;
+  padding: 10px 70px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.3s;
+}
+
+.full-text-btn:hover {
+  background-color: #d55b2b;
+}
+.quiz-no-quiz-info {
+  flex: 1;
+}
+.quiz-no-quiz-info h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #374151;
+  margin: 0 0 6px;
+}
+.quiz-no-quiz-info p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+.quiz-no-quiz-btn {
+  background: transparent;
+  color: #6b7280;
+  border: 1.5px solid #d1d5db;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  font-family: "Rubik", sans-serif;
+}
+.quiz-no-quiz-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+/* ── Small quiz button in info bar ── */
+.learn_btnn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: 20px;
+  background-color: #eb6837;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  transition: background 0.2s;
+  font-family: "Rubik", sans-serif;
+}
+.learn_btnn:hover { background-color: #c14c21; }
+.learn_btnn p {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 768px) {
+  .lesson-page {
+    padding: 16px 20px 40px;
+  }
+  .quiz-cta-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px 24px;
+  }
+  .quiz-cta-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .quiz-no-quiz-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px 24px;
+  }
+  .quiz-no-quiz-btn {
+    width: 100%;
+    text-align: center;
+  }
+  .video-info-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

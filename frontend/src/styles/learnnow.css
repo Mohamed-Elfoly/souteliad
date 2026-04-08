@@ -1,0 +1,429 @@
+/* =========================================================
+   LEARNNOW PAGE — Lesson Overview
+   ========================================================= */
+
+.learnnow-page {
+  direction: rtl;
+  background: white;
+  min-height: 100vh;
+}
+
+/* ── Loading ── */
+.learnnow-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+.learnnow-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3d5c8;
+  border-top-color: #EB6837;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* =========================================================
+   DARK HERO BANNER
+   ========================================================= */
+
+.learnnow-hero {
+  background: white;
+  padding: 48px 0 64px;
+  width: 100%;
+}
+
+.learnnow-hero-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 80px;
+}
+
+/* Breadcrumb */
+.learnnow-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 36px;
+}
+.bc-link {
+  color: #EB6837;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.bc-link:hover { text-decoration: underline; }
+.bc-current {
+  color: rgba(102, 102, 103, 1);
+  font-size: 14px;
+}
+
+/* Hero split layout */
+.learnnow-hero-split {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 56px;
+}
+
+/* Info column */
+.learnnow-hero-info {
+  flex: 1;
+  max-width: 560px;
+}
+
+.learnnow-level-badge {
+  display: inline-block;
+  background: rgba(249, 208, 193, 1);
+  border: 1px solid rgba(235, 104, 55, 1);
+  color: rgba(55, 61, 65, 1);
+  padding: 10px 25px;
+  border-radius: 15px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.learnnow-hero-title {
+  font-size: 30px;
+  font-weight: 800;
+  color: rgba(55, 61, 65, 1);
+  line-height: 1.35;
+  margin: 0 0 14px;
+}
+
+.learnnow-hero-desc {
+  font-size: 15px;
+  color: rgba(134, 134, 135, 1);
+  line-height: 1.75;
+  margin: 0 0 22px;
+}
+
+/* Stat chips */
+.learnnow-stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(55, 61, 65, 1);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 15px;
+  font-weight: 500;
+}
+.stat-chip--gold {
+  background: rgba(255, 193, 7, 0.15);
+  border-color: rgba(255, 193, 7, 0.35);
+  color: #FFC107;
+}
+
+/* Feature checklist */
+.learnnow-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+.feature-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Hero CTA button */
+.learnnow-watch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #EB6837;
+  color: #fff;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 30px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  font-family: "Rubik", sans-serif;
+}
+.learnnow-watch-btn:hover {
+  background: #c14c21;
+  transform: translateY(-2px);
+}
+
+.learnnow-thumb-btn {
+  width: 100%;
+  margin-top: 14px;
+  justify-content: center;
+}
+
+
+
+/* Thumbnail column */
+.learnnow-hero-thumb {
+  flex: 0 0 420px;
+  max-width: 420px;
+}
+.learnnow-hero-thumb img {
+  width: 100%;
+  border-radius: 16px;
+  display: block;
+  object-fit: cover;
+  aspect-ratio: 16 / 10;
+  transition: transform 0.3s;
+}
+
+/* Play overlay (used in both hero thumb + generic) */
+.thumbnail-box {
+  position: relative;
+  cursor: pointer;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.play-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 16px;
+  transition: background 0.2s;
+}
+.thumbnail-box:hover .play-overlay { background: rgba(0, 0, 0, 0.42); }
+
+.play-circle {
+  width: 64px;
+  height: 64px;
+  background: #EB6837;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(235, 104, 55, 0.55);
+  transition: transform 0.2s;
+}
+.play-circle--large {
+  width: 76px;
+  height: 76px;
+}
+.thumbnail-box:hover .play-circle { transform: scale(1.12); }
+
+/* =========================================================
+   BODY (cards below hero)
+   ========================================================= */
+
+.learnnow-body {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 80px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Card base */
+.learnnow-card {
+  background: #fff;
+  border-radius: 20px;
+  border: 1px solid #e8ecef;
+  padding: 36px 40px;
+}
+
+.learnnow-card-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #373d41;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 16px;
+  margin: 0 0 20px;
+}
+
+.learnnow-card-text {
+  font-size: 16px;
+  color: #868687;
+  line-height: 1.8;
+  margin: 0 0 24px;
+}
+
+.learnnow-card-subtitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #373d41;
+  margin: 0 0 16px;
+}
+
+/* Features grid */
+
+.learnnow-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  border-radius: 14px;
+  padding: 18px;
+}
+.feature-icon-wrap {
+  flex-shrink: 0;
+  background: #fde8de;
+  border-radius: 10px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.learnnow-feature-item h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #373d41;
+  margin: 0 0 4px;
+}
+.learnnow-feature-item p {
+  font-size: 13px;
+  color: #868687;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Rating card */
+.learnnow-rating-card {
+  background: linear-gradient(135deg, #fff8f5, #fff);
+  border-color: #fddfd0;
+}
+.rating-card-header {
+  margin-bottom: 20px;
+}
+.rating-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rating-stars-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rating-avg {
+  font-size: 18px;
+  font-weight: 700;
+  color: #373d41;
+  margin-right: 8px;
+}
+.rating-count {
+  font-size: 13px;
+  font-weight: 400;
+  color: #868687;
+}
+.rating-hint {
+  font-size: 13px;
+  margin: 0;
+}
+
+/* Bottom CTA */
+.learnnow-bottom-cta {
+  display: flex;
+  justify-content: flex-start;
+  padding-bottom: 20px;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1024px) {
+  .learnnow-hero-inner,
+  .learnnow-body {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+  .learnnow-hero-thumb {
+    flex: 0 0 340px;
+    max-width: 340px;
+  }
+  .learnnow-features-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .learnnow-hero-inner,
+  .learnnow-body {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .learnnow-hero-split {
+    flex-direction: column-reverse;
+    gap: 28px;
+  }
+  .learnnow-hero-thumb {
+    flex: none;
+    max-width: 100%;
+    width: 100%;
+  }
+  .learnnow-hero-info {
+    max-width: 100%;
+  }
+  .learnnow-hero-title {
+    font-size: 22px;
+  }
+  .learnnow-features-grid {
+    grid-template-columns: 1fr;
+  }
+  .learnnow-watch-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .learnnow-bottom-cta {
+    justify-content: stretch;
+  }
+}
+
+/* ── Completion indicator ── */
+.learnnow-completed-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  border-radius: 12px;
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  color: #4ade80;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.learnnow-done-overlay {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #22c55e;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  pointer-events: none;
+}
+
+.learnnow-watch-btn--done {
+  background: #22c55e;
+}
+.learnnow-watch-btn--done:hover {
+  background: #16a34a;
+}

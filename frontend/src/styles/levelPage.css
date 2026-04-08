@@ -1,0 +1,242 @@
+* {
+  box-sizing: border-box;
+  font-family: "Rubik", sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+.level-state {
+  text-align: center;
+  padding: 2rem;
+  color: #9ca3af;
+}
+
+.level-wrapper {
+  min-height: 100vh;
+  background: #FEFEFE;
+  color: white;
+  padding: 16px;
+  direction: rtl;
+  border: 1px solid #C6CCD1;
+  border-radius: 20px;
+  margin: 20px 40px;
+}
+
+/* HEADER */
+
+.level-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.close {
+  color: #aaa;
+  cursor: pointer;
+}
+
+.header-right h2 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  color: #373D41;
+  margin-bottom: 10px;
+}
+
+.header-right p {
+  font-size: 20px;
+  font-weight: 600;
+  color: #868687;
+}
+
+/* LEVELS */
+
+.levels {
+  margin: 25px 0;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.lvl {
+  width: 144px;
+  height: 56px;
+  border: 1px solid #EB6837;
+  padding: 8px 32px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  color: #EB6837;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.lvl:hover{
+  background: #eb6837;
+    color: #FFFFFF;
+}
+
+.lvl img{
+  width: 23.15412139892578px;
+  height: 40px;
+}
+
+.lvl.active {
+  background: #eb6837;
+  color: #FFFFFF;
+}
+
+/* PROGRESS */
+
+.progress-box {
+  margin-bottom: 25px;
+  border-radius: 10px;
+  padding: 12px;
+  border: 1px solid #ADADAE;
+}
+
+.progress-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: #373D41;
+  margin-bottom: 6px;
+}
+
+.progress {
+  height: 8px;
+  background: #FBFBF9;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  background: #eb6837;
+  border-radius: 20px;
+}
+
+/* GOAL */
+
+.goal {
+  background: white;
+  font-size: 22px;
+  font-weight: 800;
+  color: #373D41;
+  padding: 16px 18px;
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+  border: 1px solid #ADADAE;
+}
+
+.goal div{
+ display: flex;
+ align-items: center;
+ gap: 10px;
+ margin-top: 10px;
+ font-size: 18px;
+ font-weight: 500;
+ color: #373D41;
+}
+
+.lesson_head{
+  font-size: 20px;
+  font-weight: 700;
+  color: #373D41;
+  margin-bottom: 10px;
+}
+
+/* LESSONS */
+
+.lesson-item {
+  background: #FFF9F1;
+  color: black;
+  padding: 16px;
+  border-radius: 20px;
+  margin-bottom: 15px;
+  display: flex;
+  gap: 10px;
+  border: 1px solid #F6BAA3;
+  cursor: pointer;
+}
+
+.lesson-item h4 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #373D41;
+  margin: 0;
+}
+
+.lesson-item p {
+  font-size: 18px;
+  font-weight: 400;
+  margin: 5px 0 0;
+  color: #373D41;
+}
+
+.one_div{
+  margin-right: 0;
+}
+
+/* LOCKED LEVEL BUTTON */
+
+.lvl--locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+  border-color: #e5e7eb;
+  color: #9ca3af;
+}
+
+.lvl--locked:hover {
+  background: transparent;
+  color: #9ca3af;
+}
+
+/* LOCKED LESSON */
+
+.lesson-item--locked {
+  background: #f9f9f9;
+  border-color: #e5e7eb;
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.lesson-item--locked h4 {
+  color: #9ca3af;
+}
+
+.lesson-item--locked p {
+  color: #9ca3af;
+  font-size: 15px;
+}
+
+.lesson-item--done {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.lesson-item--done h4 {
+  color: #15803d;
+}
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+  .levels {
+    justify-content: center;
+  }
+
+  .goal,
+  .lesson-item {
+    flex-direction: column;
+  }
+
+}

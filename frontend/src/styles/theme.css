@@ -1,0 +1,32 @@
+:root {
+  /* Primary */
+  --color-primary: #EB6837;
+  --color-primary-light: #F6BAA3;
+  --color-shapes: #F9D0C1;
+
+  /* Backgrounds */
+  --color-card: #FFF6EA;
+  --color-button: #F3F4F5;
+  --color-search-bg: #FFFFFF;
+  --color-testimonials-bg: #FDEACF;
+  --color-level1-bg: #FFF9F1;
+  --color-level1-stroke: #F6BAA3;
+
+  /* Text */
+  --color-title: #373D41;
+  --color-subtitle: #666667;
+  --color-text-secondary: #868687;
+  --color-text-light: #FEFEFE;
+  --color-navbar-tab: #868687;
+  --color-search-text: #9CA3AF;
+  --color-lessons-main: #252C32;
+
+  /* Borders / Strokes */
+  --color-stroke: #D1D5DB;
+  --color-section-stroke: #C6CCD1;
+
+  /* Semantic */
+  --color-rating: #FFC107;
+  --color-logout: #D13131;
+  --color-footer: #632C17;
+}

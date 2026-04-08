@@ -1,0 +1,815 @@
+/* =========================================================
+   COMMUNITY PAGE
+   ========================================================= */
+
+.community-page {
+  direction: rtl;
+  background: white;
+  min-height: 100vh;
+  padding: 36px 0 80px;
+}
+
+.community-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ── Page Header ── */
+.community-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.community-header-left h1 {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--color-primary);
+  padding-bottom: 10px;
+  margin: 0 0 4px;
+}
+
+.community-header-left p {
+  font-size: 14px;
+  color: #868687;
+  margin: 0;
+}
+
+.community-new-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #EB6837;
+  color: #fff;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 30px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  font-family: "Rubik", sans-serif;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.community-new-btn:hover {
+  background: #c14c21;
+  transform: translateY(-1px);
+}
+
+/* ── Posts list ── */
+.community-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── State (loading / empty) ── */
+.community-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: #9ca3af;
+}
+
+.community-state-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.community-state p {
+  font-size: 16px;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.community-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #f3d5c8;
+  border-top-color: #EB6837;
+  border-radius: 50%;
+  animation: comm-spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+
+@keyframes comm-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* =========================================================
+   POST CARD
+   ========================================================= */
+
+.post-card {
+  background: rgba(255, 246, 234, 1);
+  border-radius: 18px;
+  border: 1px solid #e8ecef;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  transition: box-shadow 0.22s, transform 0.22s;
+}
+
+.post-card:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.09);
+  transform: translateY(-2px);
+}
+
+/* Card body */
+.post-card-body {
+  padding: 20px 22px 16px;
+}
+
+/* Header row */
+.post-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.post-user-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #EB6837;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+  flex-shrink: 0;
+  overflow: hidden;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.post-user-avatar:hover { opacity: 0.88; }
+
+.post-user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.post-user-meta {
+  flex: 1;
+}
+
+.post-user-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #252c32;
+  margin: 0 0 2px;
+}
+
+.post-date {
+  font-size: 12px;
+  color: #adb5bb;
+}
+
+/* Post content */
+.post-content {
+  font-size: 15px;
+  color: #444;
+  line-height: 1.75;
+  margin: 0 0 16px;
+  word-break: break-word;
+}
+
+/* Action bar */
+.post-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-top: 12px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.post-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #868687;
+  padding: 4px 0;
+  font-family: "Rubik", sans-serif;
+  transition: color 0.15s;
+}
+
+.post-action-btn:hover { color: #EB6837; }
+
+.post-action-btn--liked { color: #e53935; }
+
+.post-action-btn--liked:hover { color: #b71c1c; }
+
+/* =========================================================
+   COMMENTS SECTION
+   ========================================================= */
+
+.comments-section {
+  border-top: 1px solid #f0f0f0;
+  background: #fafbfc;
+  padding: 16px 22px 18px;
+}
+
+.comments-loading {
+  font-size: 14px;
+  color: #aaa;
+  text-align: center;
+  padding: 8px 0;
+}
+
+.comments-empty {
+  font-size: 14px;
+  color: #bbb;
+  text-align: center;
+  padding: 8px 0;
+}
+
+/* Individual comment */
+.comment-item {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  align-items: flex-start;
+}
+
+.comment-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #EB6837;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.comment-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.comment-bubble {
+  flex: 1;
+  background: #fff;
+  border: 1px solid #e8ecef;
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+.comment-bubble-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #373d41;
+  margin: 0 0 3px;
+}
+
+.comment-bubble-text {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+  margin: 0 0 4px;
+  word-break: break-word;
+}
+
+.comment-bubble-time {
+  font-size: 11px;
+  color: #aaa;
+}
+
+/* Add comment input row */
+.comment-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.comment-input {
+  flex: 1;
+  border: 1.5px solid #e0e4e8;
+  border-radius: 22px;
+  padding: 9px 16px;
+  font-size: 14px;
+  outline: none;
+  background: #fff;
+  direction: rtl;
+  font-family: "Rubik", sans-serif;
+  transition: border-color 0.2s;
+}
+
+.comment-input:focus {
+  border-color: #EB6837;
+}
+
+.comment-send-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #EB6837;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.comment-send-btn:hover:not(:disabled) {
+  transform: scale(1.15);
+}
+
+.comment-send-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.community-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(2px);
+}
+
+.community-modal {
+  background: #fff;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 20px;
+  padding: 36px 36px 32px;
+  position: relative;
+  direction: rtl;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+.community-modal-close {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: #f3f4f6;
+  color: red;
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.community-modal-close:hover { background: #e5e7eb; }
+
+.community-modal-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #252c32;
+  margin: 0 0 6px;
+}
+
+.community-modal-sub {
+  font-size: 14px;
+  color: #868687;
+  margin: 0 0 28px;
+}
+
+.community-modal label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #373d41;
+  margin-bottom: 6px;
+}
+
+.community-modal-input,
+.community-modal-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--color-primary);
+  margin-bottom: 18px;
+  outline: none;
+  background: rgba(255, 246, 234, 1);
+  font-size: 15px;
+  color: #373d41;
+  font-family: "Rubik", sans-serif;
+  direction: rtl;
+  transition: border-color 0.2s;
+}
+
+.community-modal-input:focus,
+.community-modal-textarea:focus {
+  border-color: #EB6837;
+}
+
+.community-modal-textarea {
+  min-height: 130px;
+  border-radius: 12px;
+  resize: none;
+}
+
+.community-publish-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 30px;
+  border: none;
+  background: #EB6837;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  font-family: "Rubik", sans-serif;
+  margin-top: 4px;
+}
+
+.community-publish-btn:hover:not(:disabled) {
+  background: #c14c21;
+  transform: translateY(-1px);
+}
+
+.community-publish-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   USER INFO MODAL
+   ========================================================= */
+
+.user-info-modal {
+  background: #fff;
+  max-width: 360px;
+  width: 100%;
+  border-radius: 20px;
+  padding: 40px 30px 32px;
+  position: relative;
+  direction: rtl;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+}
+
+.user-info-modal-avatar {
+  margin: 0 auto 14px;
+}
+
+.user-info-modal h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #252c32;
+  margin: 0 0 6px;
+}
+
+.user-info-modal p {
+  font-size: 14px;
+  color: #868687;
+  margin: 0;
+}
+
+/* =========================================================
+   ADMIN DELETE BUTTONS
+   ========================================================= */
+
+.post-card-header {
+  position: relative;
+}
+
+.post-delete-btn,
+.comment-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #ccc;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.post-delete-btn {
+  margin-right: auto;
+  margin-left: 4px;
+}
+
+.post-delete-btn:hover:not(:disabled),
+.comment-delete-btn:hover:not(:disabled) {
+  color: #ef4444;
+  background: #fef2f2;
+}
+
+.post-delete-btn:disabled,
+.comment-delete-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* =========================================================
+   USER REVIEWS PAGE
+   ========================================================= */
+
+.reviews-page {
+  padding: 24px 40px;
+  background: white;
+  min-height: 100vh;
+  direction: rtl;
+  font-family: "Rubik", system-ui, sans-serif;
+}
+
+/* Header Tabs */
+.reviews-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  margin-bottom: 80px;
+  flex-wrap: wrap;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.01);
+  border: 1px solid #f1f1f1;
+}
+
+.reviews-tab {
+  padding: 28px;
+  border-radius: 24px;
+  font-size: 20px;
+  width: 30%;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: rgba(253, 240, 235, 1);
+  border:1px solid rgba(249, 208, 193, 1);
+  color: #4b5563;
+}
+
+.reviews-tab.active {
+  background: rgba(235, 104, 55, 1);
+  color: white;
+  border-color: #f97316;
+  font-weight: 600;
+}
+
+/* Page Title */
+.reviews-title {
+  text-align: center;
+  font-size: 26px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 32px;
+}
+
+/* Search Bar */
+.reviews-search {
+  position: relative;
+  margin: 0 auto ;
+}
+
+.reviews-search input {
+  width: 100%;
+  padding: 14px 40px 14px 50px;
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px;
+  font-size: 15px;
+  background: white;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.reviews-search input:focus {
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+}
+
+.reviews-search .search-icon {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+
+/* Table Container */
+.reviews-table-container {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f1f1f1;
+}
+
+/* Table Header */
+.reviews-table{
+  margin-top: 20px;
+}
+.reviews-table thead th {
+  background: #f8fafc;
+  padding: 18px 20px;
+  text-align: right;
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.reviews-table th:first-child {
+  width: 50px;
+}
+
+/* Table Rows */
+.reviews-table tbody tr {
+  border-bottom: 1px solid #f1f1f1;
+  transition: background 0.2s;
+}
+
+.reviews-table tbody tr:hover {
+  background: #fffaf0;
+}
+
+.reviews-table td {
+  padding: 20px;
+  vertical-align: middle;
+}
+
+/* User Cell */
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-cell img {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-cell span {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 6px 16px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-new {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-reviewed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-replied {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-pending {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Message Column */
+.message-cell {
+  max-width: 460px;
+  line-height: 1.7;
+  color: #374151;
+  font-size: 15px;
+}
+
+/* Checkbox */
+.reviews-table input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #f97316;
+  cursor: pointer;
+}
+
+/* Pagination */
+.reviews-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 32px;
+  padding: 0 10px;
+}
+
+.pagination-info {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.pagination-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pagination-btn {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e5e7eb;
+  background: white;
+  border-radius: 10px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pagination-btn:hover {
+  background: #f3f4f6;
+}
+
+.pagination-btn.active {
+  background: #f97316;
+  color: white;
+  border-color: #f97316;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .reviews-page {
+    padding: 20px;
+  }
+  
+  .message-cell {
+    max-width: 320px;
+  }
+}
+
+@media (max-width: 768px) {
+  .reviews-tabs {
+    justify-content: center;
+  }
+  
+  .reviews-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  
+  .reviews-search {
+    margin: 0 auto 24px;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 600px) {
+  .community-page {
+    padding: 24px 0 60px;
+  }
+  .community-header {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 14px;
+  }
+  .community-new-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .community-modal {
+    padding: 28px 20px 24px;
+  }
+}

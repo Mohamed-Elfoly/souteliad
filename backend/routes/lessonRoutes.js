@@ -1,0 +1,40 @@
+const express = require('express');
+const lessonController = require('../controllers/lessonController');
+const authController = require('../controllers/authController');
+const quizRouter = require('./quizRoutes');
+const ratingRouter = require('./ratingRoutes');
+
+const router = express.Router({ mergeParams: true });
+
+// Nest quiz and rating routes
+router.use('/:lessonId/quizzes', quizRouter);
+router.use('/:lessonId/ratings', ratingRouter);
+
+// Public GET routes (no auth required)
+router.get('/', lessonController.setFilterObj, lessonController.getAllLessons);
+router.get('/:id', lessonController.getLesson);
+
+// Protected mutation routes
+router.post(
+  '/',
+  authController.protect,
+  authController.restrictTo('teacher', 'admin'),
+  lessonController.setLevelTeacherIds,
+  lessonController.createLesson
+);
+
+router.patch(
+  '/:id',
+  authController.protect,
+  authController.restrictTo('teacher', 'admin'),
+  lessonController.updateLesson
+);
+
+router.delete(
+  '/:id',
+  authController.protect,
+  authController.restrictTo('teacher', 'admin'),
+  lessonController.deleteLesson
+);
+
+module.exports = router;

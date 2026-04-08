@@ -1,0 +1,564 @@
+/* =========================================================
+   LESSONS PAGE
+   ========================================================= */
+
+.lessons-page {
+  direction: rtl;
+  padding: 24px 200px 200px;
+  background: white;
+  min-height: 100vh;
+}
+
+.lessons-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #EB6837;
+  margin-bottom: 6px;
+  text-align: right;
+}
+
+.lessons-title {
+  font-size: 30px;
+  font-weight: 800;
+  color: #252c32;
+  margin-bottom: 24px;
+  text-align: right;
+}
+
+/* =========================================================
+   PROGRESS CARD
+   ========================================================= */
+
+.progress-card {
+  background: rgba(255, 246, 234, 1);
+  border-radius: 9.8px;
+  border: 1px solid #e8ecef;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 16px 20px;
+  margin-bottom: 40px;
+  direction: rtl;
+}
+
+.progress-card-img {
+  width: 240px;
+  object-fit: cover;
+  height: 170px;
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+
+.progress-card-img img{
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+}
+
+.progress-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.progress-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #252c32;
+  margin: 0 0 6px;
+}
+
+.progress-card-desc {
+  font-size: 14px;
+  color: #868687;
+  line-height: 1.6;
+  margin: 0 0 10px;
+}
+
+.progress-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+  color: #868687;
+}
+
+.progress-card-meta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Progress bar */
+.progress-footer {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.progress-bar-section {
+  flex: 1;
+}
+
+.progress-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.progress-count-text {
+  font-size: 13px;
+  color: #868687;
+  font-weight: 500;
+}
+
+.progress-pct-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #EB6837;
+}
+
+.progress-track {
+  height: 10px;
+  background: #e8ecef;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #EB6837, #f0956a);
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+.progress-cta-btn {
+  flex-shrink: 0;
+  background: #EB6837;
+  color: #fff;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 5px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: "Rubik", sans-serif;
+  transition: background 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+
+.progress-cta-btn:hover {
+  background: #c14c21;
+  transform: translateY(-1px);
+}
+
+/* =========================================================
+   LEVEL TABS
+   ========================================================= */
+
+.level-tabs {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+  justify-content: center;
+}
+
+.level-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: 5px;
+  border: 1.5px solid #e0e4e8;
+  background: #fff;
+  color: #373d41;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: "Rubik", sans-serif;
+}
+
+.level-tab img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.level-tab:hover {
+  border-color: #EB6837;
+  color: #EB6837;
+}
+
+.level-tab.active {
+  background: #EB6837;
+  border-color: #EB6837;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(235, 104, 55, 0.35);
+}
+
+/* =========================================================
+   LESSON CARDS GRID
+   ========================================================= */
+
+.lessons-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.lessons-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  color: #9ca3af;
+  font-size: 16px;
+}
+
+/* ── Individual card ── */
+.lesson-card {
+  background:  rgba(255, 246, 234, 1);
+  border-radius: 8px;
+  border: 1.5px solid #e8ecef;
+  overflow: hidden;
+  display: flex;
+  padding: 16px;
+  flex-direction: column;
+  cursor: pointer;
+  transition: box-shadow 0.22s, transform 0.22s, border-color 0.22s;
+}
+
+.lesson-card:hover {
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+  border-color: #fddfd0;
+}
+
+/* Completed card styling */
+.lesson-card--done {
+  border-color: #bbf7d0;
+}
+
+.lesson-card--done:hover {
+  border-color: #4ade80;
+  box-shadow: 0 8px 28px rgba(74, 222, 128, 0.15);
+}
+
+/* Thumbnail */
+.lesson-card-thumb {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.lesson-card-thumb img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 12px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s;
+}
+
+.lesson-card:hover .lesson-card-thumb img {
+  transform: scale(1.05);
+}
+
+/* Completed overlay on thumbnail */
+.lesson-done-overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #22c55e;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+}
+
+/* Card body */
+.lesson-card-body {
+  padding: 18px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  direction: rtl;
+}
+
+.lesson-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #252c32;
+  margin: 0 0 8px;
+  text-align: right;
+  line-height: 1.4;
+}
+
+.lesson-card-desc {
+  font-size: 13px;
+  color: #868687;
+  line-height: 1.6;
+  margin: 0 0 14px;
+  text-align: right;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.lesson-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #868687;
+  margin-bottom: 14px;
+}
+
+.lesson-card-duration {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #868687;
+}
+
+/* Stars */
+.star-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.star-display-value {
+  font-size: 12px;
+  color: #666;
+  margin-right: 4px;
+}
+
+/* Card button */
+.lesson-card-btn {
+  width: 100%;
+  padding: 11px;
+  border-radius: 12px;
+  background: #EB6837;
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: "Rubik", sans-serif;
+}
+
+.lesson-card-btn:hover {
+  background: #c14c21;
+}
+
+.lesson-card-btn--done {
+  background: transparent;
+  border: 1.5px solid #22c55e;
+  color: #16a34a;
+}
+
+.lesson-card-btn--done:hover {
+  background: #22c55e;
+  color: #fff;
+}
+
+/* =========================================================
+   LOCKED LEVEL TAB
+   ========================================================= */
+
+.level-tab--locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+  color: #9ca3af;
+  border-color: #e5e7eb;
+}
+
+.level-tab--locked:hover {
+  border-color: #e5e7eb;
+  color: #9ca3af;
+}
+
+.level-tab--locked.active {
+  background: #e5e7eb;
+  border-color: #e5e7eb;
+  color: #9ca3af;
+  box-shadow: none;
+}
+
+/* =========================================================
+   LOCKED LESSON CARD
+   ========================================================= */
+
+.lesson-card--locked {
+  cursor: not-allowed;
+  opacity: 0.7;
+  border-color: #e5e7eb;
+}
+
+.lesson-card--locked:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: #e5e7eb;
+}
+
+.lesson-card--locked .lesson-card-thumb img {
+  filter: grayscale(60%);
+}
+
+.lesson-card--locked:hover .lesson-card-thumb img {
+  transform: none;
+}
+
+/* Lock overlay on thumbnail (mirrors done overlay) */
+.lesson-lock-overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(75, 85, 99, 0.85);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Locked button */
+.lesson-card-btn--locked {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lesson-card-btn--locked:hover {
+  background: #e5e7eb;
+  color: #9ca3af;
+}
+
+/* =========================================================
+   LOCKED LESSON PAGE (Learnnow / Testyourself guard)
+   ========================================================= */
+
+.learnnow-locked {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 40px 20px;
+  direction: rtl;
+}
+
+.learnnow-locked-card {
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 24px;
+  padding: 48px 40px;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.learnnow-locked-icon {
+  width: 80px;
+  height: 80px;
+  background: #f3f4f6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.learnnow-locked-card h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #252c32;
+  margin: 0 0 12px;
+}
+
+.learnnow-locked-card p {
+  font-size: 15px;
+  color: #868687;
+  line-height: 1.6;
+  margin: 0 0 28px;
+}
+
+.learnnow-locked-btn {
+  background: #EB6837;
+  color: #fff;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 30px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: "Rubik", sans-serif;
+  transition: background 0.2s;
+}
+
+.learnnow-locked-btn:hover {
+  background: #c14c21;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1024px) {
+  .lessons-page {
+    padding: 20px 40px 60px;
+  }
+  .lessons-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .lessons-page {
+    padding: 16px 16px 60px;
+  }
+  .progress-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  .progress-card-img {
+    width: 100%;
+    height: 160px;
+  }
+  .progress-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .progress-cta-btn {
+    width: 100%;
+    text-align: center;
+  }
+  .lessons-grid {
+    grid-template-columns: 1fr;
+  }
+  .level-tabs {
+    justify-content: flex-start;
+  }
+}
