@@ -178,7 +178,7 @@ export default function Lessons() {
                 {/* Thumbnail */}
                 <div className="lesson-card-thumb">
                   <img
-                    src={lesson.thumbnailUrl || FALLBACK_THUMBS[index % FALLBACK_THUMBS.length]} srcSet="image@2x.png 2x"
+                    src={lesson.thumbnailUrl || FALLBACK_THUMBS[index % FALLBACK_THUMBS.length]} 
                     alt={lesson.title}
                     loading="lazy"
                     decoding="async"
