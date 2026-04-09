@@ -339,7 +339,7 @@ const StudentsTeacher           = lazy(() => import('./pages/StudentsTeacher'));
 // const AddQuizAsTeacherPage      = lazy(() => import('./pages/lessonsAndQuizzes/AddQuizAsTeacherPage'));
 const ManageContent             = lazy(() => import('./pages/ManageContent'));
 
-const LandingpageLogin          = lazy(() => import('./pages/web/LandingpageLogin'));
+const LandingpageLogin          = lazy(() => import('./pages/LandingpageLogin'));
 const Community                 = lazy(() => import('./pages/web/Community'));
 const Chats                     = lazy(() => import('./pages/web/Chats'));
 const Chat_Message              = lazy(() => import('./pages/web/Chat_Message'));
