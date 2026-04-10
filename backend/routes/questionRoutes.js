@@ -1,6 +1,7 @@
 const express = require('express');
 const questionController = require('../controllers/questionController');
 const authController = require('../controllers/authController');
+const { uploadQuestionImage } = require('../utils/lessonUpload');
 
 const router = express.Router({ mergeParams: true });
 
@@ -12,7 +13,9 @@ router
   .get(questionController.setFilterObj, questionController.getAllQuestions)
   .post(
     authController.restrictTo('teacher', 'admin'),
+    uploadQuestionImage,
     questionController.setQuizId,
+    questionController.processImageField,
     questionController.createQuestion
   );
 
@@ -21,6 +24,8 @@ router
   .get(questionController.getQuestion)
   .patch(
     authController.restrictTo('teacher', 'admin'),
+    uploadQuestionImage,
+    questionController.processImageField,
     questionController.updateQuestion
   )
   .delete(

@@ -13,7 +13,6 @@ const lessonSchema = new mongoose.Schema(
     },
     videoUrl: {
       type: String,
-      required: [true, 'A lesson must have a video URL'],
     },
     thumbnailUrl: {
       type: String,

@@ -42,6 +42,7 @@ app.options('*', cors());
 
 // Serving static files
 app.use(express.static('public'));
+app.use('/uploads', express.static('public/uploads'));
 
 // Development logging
 if (process.env.NODE_ENV === 'development') {

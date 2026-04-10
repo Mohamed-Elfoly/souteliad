@@ -1,6 +1,7 @@
 const express = require('express');
 const lessonController = require('../controllers/lessonController');
 const authController = require('../controllers/authController');
+const { uploadLessonMedia } = require('../utils/lessonUpload');
 const quizRouter = require('./quizRoutes');
 const ratingRouter = require('./ratingRoutes');
 
@@ -19,7 +20,9 @@ router.post(
   '/',
   authController.protect,
   authController.restrictTo('teacher', 'admin'),
+  uploadLessonMedia,
   lessonController.setLevelTeacherIds,
+  lessonController.processMediaFields,
   lessonController.createLesson
 );
 
@@ -27,6 +30,8 @@ router.patch(
   '/:id',
   authController.protect,
   authController.restrictTo('teacher', 'admin'),
+  uploadLessonMedia,
+  lessonController.processMediaFields,
   lessonController.updateLesson
 );
 
