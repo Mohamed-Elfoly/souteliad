@@ -1,6 +1,7 @@
 const Rating = require('../models/ratingModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
+const APIFeatures = require('../utils/apiFeatures');
 
 // POST /lessons/:lessonId/ratings — add a rating (once per user)
 exports.addRating = catchAsync(async (req, res, next) => {
@@ -28,6 +29,27 @@ exports.addRating = catchAsync(async (req, res, next) => {
     data: {
       data: newRating,
     },
+  });
+});
+
+// GET /api/v1/ratings/admin — admin fetches all ratings with student + lesson info
+exports.getAllRatingsAdmin = catchAsync(async (req, res, next) => {
+  const features = new APIFeatures(
+    Rating.find()
+      .populate('userId', 'firstName lastName email')
+      .populate('lessonId', 'title')
+      .sort('-createdAt'),
+    req.query
+  )
+    .filter()
+    .paginate();
+
+  const ratings = await features.query;
+
+  return res.status(200).json({
+    status: 'success',
+    results: ratings.length,
+    data: { data: ratings },
   });
 });
 
