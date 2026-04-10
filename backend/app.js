@@ -27,6 +27,7 @@ const progressReportRouter = require('./routes/studentProgressReportRoutes');
 const notificationRouter = require('./routes/notificationRoutes');
 const aiPracticeRouter = require('./routes/aiPracticeRoutes');
 const statsRouter = require('./routes/statsRoutes');
+const supportTicketRouter = require('./routes/supportTicketRoutes');
 
 const app = express();
 
@@ -88,6 +89,7 @@ app.use('/api/v1/progress-reports', progressReportRouter);
 app.use('/api/v1/notifications', notificationRouter);
 app.use('/api/v1/ai-practice', aiPracticeRouter);
 app.use('/api/v1/stats', statsRouter);
+app.use('/api/v1/support', supportTicketRouter);
 
 // Health check route
 app.get('/api/v1/health', (req, res) => {

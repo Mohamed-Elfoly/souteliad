@@ -4,7 +4,7 @@ const notificationSchema = new mongoose.Schema({
   type: {
     type: String,
     required: [true, 'A notification must have a type'],
-    enum: ['lesson', 'quiz', 'community', 'system', 'announcement'],
+    enum: ['lesson', 'quiz', 'community', 'system', 'announcement', 'support'],
   },
   message: {
     type: String,
