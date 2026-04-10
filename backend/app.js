@@ -27,6 +27,8 @@ const progressReportRouter = require('./routes/studentProgressReportRoutes');
 const notificationRouter = require('./routes/notificationRoutes');
 const aiPracticeRouter = require('./routes/aiPracticeRoutes');
 const statsRouter = require('./routes/statsRoutes');
+const supportTicketRouter = require('./routes/supportTicketRoutes');
+const ratingRouter = require('./routes/ratingRoutes');
 
 const app = express();
 
@@ -41,6 +43,7 @@ app.options('*', cors());
 
 // Serving static files
 app.use(express.static('public'));
+app.use('/uploads', express.static('public/uploads'));
 
 // Development logging
 if (process.env.NODE_ENV === 'development') {
@@ -88,6 +91,8 @@ app.use('/api/v1/progress-reports', progressReportRouter);
 app.use('/api/v1/notifications', notificationRouter);
 app.use('/api/v1/ai-practice', aiPracticeRouter);
 app.use('/api/v1/stats', statsRouter);
+app.use('/api/v1/support', supportTicketRouter);
+app.use('/api/v1/ratings', ratingRouter);
 
 // Health check route
 app.get('/api/v1/health', (req, res) => {
