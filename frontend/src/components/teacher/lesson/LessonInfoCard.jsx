@@ -66,7 +66,7 @@ export default function LessonInfoCard({
               type="button"
               onClick={() => onLevelModeSwitch("existing")}
               className={`px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
-                levelMode === "existing" ? "bg-white text-orange-500 shadow-sm" : "text-gray-500"
+                levelMode === "existing" ? "bg-white text-[#EB6837] shadow-sm" : "text-gray-500"
               }`}
             >
               موجود
@@ -75,7 +75,7 @@ export default function LessonInfoCard({
               type="button"
               onClick={() => onLevelModeSwitch("new")}
               className={`px-3 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${
-                levelMode === "new" ? "bg-white text-orange-500 shadow-sm" : "text-gray-500"
+                levelMode === "new" ? "bg-white text-[#EB6837] shadow-sm" : "text-gray-500"
               }`}
             >
               + مستوى جديد

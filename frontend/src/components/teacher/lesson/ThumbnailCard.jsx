@@ -22,7 +22,7 @@ export default function ThumbnailCard({ register, errors, setValue, thumbnailUrl
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
       <h2 className="text-sm font-semibold text-gray-700 border-b border-gray-100 pb-3 flex items-center gap-2">
-        <ImageIcon size={15} className="text-orange-500" />
+        <ImageIcon size={15} className="text-[#EB6837]" />
         صورة الدرس{" "}
         <span className="text-gray-400 font-normal text-xs">(اختياري)</span>
       </h2>
@@ -56,7 +56,7 @@ export default function ThumbnailCard({ register, errors, setValue, thumbnailUrl
           />
           <label htmlFor="thumbnail-upload" className="cursor-pointer block">
             <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center mx-auto mb-2">
-              <ImageIcon size={20} className="text-orange-400" />
+              <ImageIcon size={20} className="text-[#EB6837]" />
             </div>
             <p className="text-sm text-gray-500">اضغط لاختيار صورة</p>
             <p className="text-xs text-gray-400 mt-1">JPEG, PNG, WEBP</p>

@@ -13,7 +13,7 @@ export default function VideoCard({ register, errors, videoUrl }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
       <h2 className="text-sm font-semibold text-gray-700 border-b border-gray-100 pb-3 flex items-center gap-2">
-        <Video size={15} className="text-orange-500" />
+        <Video size={15} className="text-[#EB6837]" />
         فيديو الدرس
       </h2>
 

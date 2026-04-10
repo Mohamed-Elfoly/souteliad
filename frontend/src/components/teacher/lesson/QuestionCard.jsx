@@ -53,7 +53,7 @@ export default function QuestionCard({ q, idx, onChange, onDelete }) {
 
       {/* ── Header ── */}
       <div className="flex items-center justify-between mb-4">
-        <span className="text-sm font-semibold text-orange-500 bg-orange-50 px-3 py-1 rounded-full">
+        <span className="text-sm font-semibold text-[#EB6837] bg-orange-50 px-3 py-1 rounded-full">
           السؤال {idx + 1}
         </span>
         <button
@@ -84,7 +84,7 @@ export default function QuestionCard({ q, idx, onChange, onDelete }) {
               onClick={() => handleTypeChange(t.value)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 q.type === t.value
-                  ? "bg-white text-orange-500 shadow-sm"
+                  ? "bg-white text-[#EB6837] shadow-sm"
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
@@ -139,7 +139,7 @@ export default function QuestionCard({ q, idx, onChange, onDelete }) {
             <button
               type="button"
               onClick={addOption}
-              className="flex items-center gap-1.5 text-orange-500 hover:text-orange-600 text-sm mt-2"
+              className="flex items-center gap-1.5 text-[#EB6837] hover:text-orange-600 text-sm mt-2"
             >
               <Plus size={14} /> إضافة خيار
             </button>
@@ -155,7 +155,7 @@ export default function QuestionCard({ q, idx, onChange, onDelete }) {
               key={i}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 cursor-pointer transition-all ${
                 opt.isCorrect
-                  ? "border-orange-400 bg-orange-50 text-orange-600"
+                  ? "border-[#EB6837] bg-[orange-50] text-[#EB6837]"
                   : "border-gray-200 text-gray-500"
               }`}
             >

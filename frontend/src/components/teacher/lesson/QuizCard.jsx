@@ -43,7 +43,7 @@ export default function QuizCard({
           aria-label="تفعيل الاختبار"
           onClick={() => setQuizEnabled((v) => !v)}
           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-            quizEnabled ? "bg-orange-500" : "bg-gray-200"
+            quizEnabled ? "bg-[#EB6837]" : "bg-gray-200"
           }`}
         >
           <span
@@ -88,7 +88,7 @@ export default function QuizCard({
           <button
             type="button"
             onClick={addQuestion}
-            className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-orange-200 text-orange-500 rounded-xl hover:border-orange-400 hover:bg-orange-50 transition-all text-sm font-medium"
+            className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-[#EB6837] cursor-pointer text-orange-500 rounded-xl hover:border-orange-400 hover:bg-orange-50 transition-all text-sm font-medium"
           >
             <Plus size={16} /> إضافة سؤال جديد
           </button>
