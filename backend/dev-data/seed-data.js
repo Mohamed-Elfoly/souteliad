@@ -12,10 +12,10 @@ fs.writeFileSync(path.join(base, 'users.json'), JSON.stringify(users, null, 2));
 console.log('users.json written');
 
 const levels = [
-  { _id: '507f1f77bcf86cd799439021', title: 'الحروف والأرقام', description: 'تعلّم أساسيات لغة الإشارة العربية — الحروف والأرقام والألوان', levelOrder: 1, adminId: '507f1f77bcf86cd799439011' },
-  { _id: '507f1f77bcf86cd799439022', title: 'الأسرة والناس', description: 'تعابير الأسرة والمشاعر والتحيات في الحياة اليومية', levelOrder: 2, adminId: '507f1f77bcf86cd799439011' },
-  { _id: '507f1f77bcf86cd799439023', title: 'البيت والحياة اليومية', description: 'غرف المنزل والأدوات والملابس وكل ما يخص البيت', levelOrder: 3, adminId: '507f1f77bcf86cd799439011' },
-  { _id: '507f1f77bcf86cd799439024', title: 'الغذاء والتسوق', description: 'أنواع الطعام والسوق والمطعم والمعاملات اليومية', levelOrder: 4, adminId: '507f1f77bcf86cd799439011' },
+  { _id: '507f1f77bcf86cd799439021', title: 'الاول', description: 'تعلّم أساسيات لغة الإشارة العربية — الحروف والأرقام والألوان', levelOrder: 1, adminId: '507f1f77bcf86cd799439011' },
+  { _id: '507f1f77bcf86cd799439022', title: 'الثانى', description: 'تعابير الأسرة والمشاعر والتحيات في الحياة اليومية', levelOrder: 2, adminId: '507f1f77bcf86cd799439011' },
+  { _id: '507f1f77bcf86cd799439023', title: 'الثالث', description: 'غرف المنزل والأدوات والملابس وكل ما يخص البيت', levelOrder: 3, adminId: '507f1f77bcf86cd799439011' },
+  { _id: '507f1f77bcf86cd799439024', title: 'الرابع', description: 'أنواع الطعام والسوق والمطعم والمعاملات اليومية', levelOrder: 4, adminId: '507f1f77bcf86cd799439011' },
 ];
 fs.writeFileSync(path.join(base, 'levels.json'), JSON.stringify(levels, null, 2));
 console.log('levels.json written');
