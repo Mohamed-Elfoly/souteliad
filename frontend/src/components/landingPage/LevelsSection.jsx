@@ -50,7 +50,7 @@
 //         ) : lessons.length === 0 ? (
 //           <div className="col-span-full text-center py-12 text-gray-400 text-[15px]">لا توجد دروس لهذا المستوى</div>
 //         ) : (
-//           lessons.map((lesson, index) => (
+//           lessons.slice(0, 4).map((lesson, index) => (
 //             <CourseCard
 //               key={lesson._id}
 //               lesson={lesson}
@@ -115,7 +115,7 @@ export default function LevelsSection({
         ) : lessons.length === 0 ? (
           <div className="col-span-full text-center py-12 text-gray-400 text-[15px]">لا توجد دروس لهذا المستوى</div>
         ) : (
-          lessons.map((lesson, index) => (
+          lessons.slice(0, 4).map((lesson, index) => (
             <CourseCard
               key={lesson._id}
               lesson={lesson}
