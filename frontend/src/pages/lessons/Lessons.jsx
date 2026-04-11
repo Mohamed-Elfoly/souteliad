@@ -19,6 +19,14 @@ import useAuth from "../../hooks/useAuth";
 const LEVEL_IMAGES = [one, two, three, four];
 const FALLBACK_THUMBS = [letters, family, home, food];
 
+const normalizeUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith('http://localhost') || url.startsWith('https://localhost')) {
+    return url.replace(/^https?:\/\/localhost:\d+/, '');
+  }
+  return url;
+};
+
 function StarDisplay({ rating }) {
   const rounded = Math.round(rating * 2) / 2;
   return (
@@ -178,7 +186,7 @@ export default function Lessons() {
                 {/* Thumbnail */}
                 <div className="lesson-card-thumb">
                   <img
-                    src={lesson.thumbnailUrl || FALLBACK_THUMBS[index % FALLBACK_THUMBS.length]} 
+                    src={normalizeUrl(lesson.thumbnailUrl) || FALLBACK_THUMBS[index % FALLBACK_THUMBS.length]}
                     alt={lesson.title}
                     loading="lazy"
                     decoding="async"

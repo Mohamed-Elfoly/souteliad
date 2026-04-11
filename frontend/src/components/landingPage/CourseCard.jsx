@@ -2,6 +2,14 @@ import { Star, Clock, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 
+const normalizeUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith('http://localhost') || url.startsWith('https://localhost')) {
+    return url.replace(/^https?:\/\/localhost:\d+/, '');
+  }
+  return url;
+};
+
 export default function CourseCard({ lesson, isCompleted, fallbackThumb }) {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
@@ -18,7 +26,7 @@ export default function CourseCard({ lesson, isCompleted, fallbackThumb }) {
       {/* Thumbnail */}
       <div className="w-full overflow-hidden rounded-[20px] bg-gray-100 relative">
         <img
-          src={lesson.thumbnailUrl || fallbackThumb}
+          src={normalizeUrl(lesson.thumbnailUrl) || fallbackThumb}
           alt={lesson.title}
           loading="lazy"
           decoding="async"
@@ -87,7 +95,7 @@ export default function CourseCard({ lesson, isCompleted, fallbackThumb }) {
 //       {/* Thumbnail */}
 //       <div className="w-full overflow-hidden bg-gray-100 relative">
 //         <img
-//           src={lesson.thumbnailUrl || fallbackThumb}
+//           src={normalizeUrl(lesson.thumbnailUrl) || fallbackThumb}
 //           alt={lesson.title}
 //           loading="lazy"
 //           decoding="async"
