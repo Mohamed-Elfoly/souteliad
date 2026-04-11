@@ -33,8 +33,12 @@ const schema = z.object({
   description: z.string().optional(),
   duration: z.string().optional(),
   thumbnailUrl: z
-    .union([z.string().url("رابط الصورة غير صحيح"), z.literal("")])
-    .optional(),
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || val.startsWith("data:image/") || val.startsWith("http://") || val.startsWith("https://"),
+      "رابط الصورة غير صحيح"
+    ),
 });
 
 export default function AddLesson({ redirectTo = "/Dashboard" }) {
