@@ -1,8 +1,8 @@
 import { memo } from 'react';
 import { Trash2, Eye, MessageSquare } from 'lucide-react';
-import Avatar from './shared/Avatar';
-import { timeAgo } from './shared/timeAgo';
-import { getUserName } from './shared/GetUserName';
+import Avatar from '../shared/Avatar';
+import { timeAgo } from '../shared/timeAgo';
+import { getUserName } from '../shared/GetUserName';
 
 const PRIMARY = '#EB6837';
 

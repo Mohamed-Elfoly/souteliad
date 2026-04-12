@@ -1,12 +1,12 @@
 import { X, Trash2, MessageSquare } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import Avatar from './shared/Avatar';
-import Spinner from './shared/Spinner';
-import EmptyState from './shared/EmptyState';
-import { timeAgo } from './shared/timeAgo';
-import { getUserName } from './shared/GetUserName';
-import { getComments, deleteComment } from '../../api/postApi';
+import Avatar from '../shared/Avatar';
+import Spinner from '../shared/Spinner';
+import EmptyState from '../shared/EmptyState';
+import { timeAgo } from '../shared/timeAgo';
+import { getUserName } from '../shared/GetUserName';
+import { getComments, deleteComment } from '../../../api/postApi';
 
 export default function CommentsDrawer({ post, onClose }) {
   const queryClient = useQueryClient();

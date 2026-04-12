@@ -3,10 +3,10 @@ import { LayoutList } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import PostCard from './PostCard';
-import CommentsDrawer from './CommentsDrawer';
-import Spinner from './shared/Spinner';
-import EmptyState from './shared/EmptyState';
-import { getAllPosts, deletePost } from '../../api/postApi';
+import CommentsDrawer from '../posts/CommentsDrawer';
+import Spinner from '../shared/Spinner';
+import EmptyState from '../shared/EmptyState';
+import { getAllPosts, deletePost } from '../../../api/postApi';
 
 export default function PostsTab() {
   const [activePost, setActivePost] = useState(null);
