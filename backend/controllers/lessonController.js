@@ -1,7 +1,33 @@
+const fs = require('fs');
+const path = require('path');
 const Lesson = require('../models/lessonModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const factory = require('./handlerFactory');
+
+// Save a base64 data URI to disk, return the filename or null
+const saveBase64File = (dataUri, folder, prefix, userId) => {
+  const match = dataUri.match(/^data:([a-zA-Z0-9+/]+\/[a-zA-Z0-9+/]+);base64,(.+)$/);
+  if (!match) return null;
+
+  const mimeType = match[1];
+  const base64Data = match[2];
+
+  const extMap = {
+    'image/jpeg': '.jpg', 'image/jpg': '.jpg', 'image/png': '.png',
+    'image/webp': '.webp', 'image/gif': '.gif',
+    'video/mp4': '.mp4', 'video/webm': '.webm', 'video/ogg': '.ogv',
+  };
+  const ext = extMap[mimeType];
+  if (!ext) return null;
+
+  const filename = `${prefix}-${userId}-${Date.now()}${ext}`;
+  const destDir = path.join(__dirname, '..', 'public', 'uploads', folder);
+  if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
+
+  fs.writeFileSync(path.join(destDir, filename), Buffer.from(base64Data, 'base64'));
+  return filename;
+};
 
 exports.setLevelTeacherIds = (req, res, next) => {
   if (!req.body.levelId) req.body.levelId = req.params.levelId;
@@ -14,21 +40,32 @@ exports.setFilterObj = (req, res, next) => {
   next();
 };
 
-// Resolve media fields: prefer uploaded file, fall back to URL string from body
+// Resolve media fields: multer file > base64 > URL string
 exports.processMediaFields = (req, res, next) => {
   const files = req.files || {};
+  const baseUrl = `${req.protocol}://${req.get('host')}`;
 
-  // Thumbnail: uploaded file takes priority over thumbnailUrl string
-  if (files.thumbnailFile && files.thumbnailFile[0]) {
-    req.body.thumbnailUrl = `${req.protocol}://${req.get('host')}/uploads/lessons/images/${files.thumbnailFile[0].filename}`;
+  // ── Thumbnail ──
+  if (files.thumbnailFile?.[0]) {
+    // multer file upload
+    req.body.thumbnailUrl = `${baseUrl}/uploads/lessons/images/${files.thumbnailFile[0].filename}`;
+  } else if (req.body.thumbnailUrl?.startsWith('data:image/')) {
+    // base64 from frontend
+    const filename = saveBase64File(req.body.thumbnailUrl, 'lessons/images', 'lesson-img', req.user.id);
+    if (filename) req.body.thumbnailUrl = `${baseUrl}/uploads/lessons/images/${filename}`;
+    else delete req.body.thumbnailUrl;
   }
-  // else: thumbnailUrl stays as whatever string was sent in body (link or undefined)
 
-  // Video: uploaded file takes priority over videoUrl string
-  if (files.videoFile && files.videoFile[0]) {
-    req.body.videoUrl = `${req.protocol}://${req.get('host')}/uploads/lessons/videos/${files.videoFile[0].filename}`;
+  // ── Video ──
+  if (files.videoFile?.[0]) {
+    // multer file upload
+    req.body.videoUrl = `${baseUrl}/uploads/lessons/videos/${files.videoFile[0].filename}`;
+  } else if (req.body.videoUrl?.startsWith('data:video/')) {
+    // base64 from frontend
+    const filename = saveBase64File(req.body.videoUrl, 'lessons/videos', 'lesson-vid', req.user.id);
+    if (filename) req.body.videoUrl = `${baseUrl}/uploads/lessons/videos/${filename}`;
+    else delete req.body.videoUrl;
   }
-  // else: videoUrl stays as whatever string was sent in body (link or undefined)
 
   next();
 };

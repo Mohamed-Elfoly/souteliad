@@ -12,7 +12,13 @@ import useAuth from "../../hooks/useAuth";
 const schema = z
   .object({
     passwordCurrent: z.string().min(1, "من فضلك أدخل كلمة المرور القديمة"),
-    password: z.string().min(8, "كلمة المرور يجب أن تكون 8 أحرف على الأقل"),
+    password: z
+      .string()
+      .min(8, "كلمة المرور يجب أن تكون 8 أحرف على الأقل")
+      .regex(/[A-Z]/, "يجب أن تحتوي على حرف كبير واحد على الأقل")
+      .regex(/[a-z]/, "يجب أن تحتوي على حرف صغير واحد على الأقل")
+      .regex(/[0-9]/, "يجب أن تحتوي على رقم واحد على الأقل")
+      .regex(/[^A-Za-z0-9]/, "يجب أن تحتوي على رمز خاص واحد على الأقل"),
     passwordConfirm: z.string().min(1, "من فضلك أكد كلمة المرور"),
   })
   .refine((data) => data.password === data.passwordConfirm, {
