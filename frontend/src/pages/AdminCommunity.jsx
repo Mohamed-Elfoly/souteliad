@@ -1,36 +1,24 @@
 /**
  * AdminCommunity.jsx  —  pages/AdminCommunity.jsx
  *
- * Route: <Route path="/UserReviews" element={<AdminCommunity />} />
- *
- * Folder structure expected:
- *   src/
- *   ├── pages/
- *   │   └── AdminCommunity.jsx          ← this file
- *   └── components/
- *       └── community/
- *           ├── Avatar.jsx
- *           ├── StatusBadge.jsx
- *           ├── EmptyState.jsx
- *           ├── Spinner.jsx
- *           ├── Pagination.jsx
- *           ├── PostCard.jsx
- *           ├── CommentsDrawer.jsx
- *           ├── ReviewsTab.jsx
- *           ├── PostsTab.jsx
- *           └── timeAgo.js
+ * Tabs:
+ *   1. اراء المستخدمين  → ReviewsTab
+ *   2. مشاكل المستخدمين → SupportTicketsTab   ← NEW
+ *   3. المنشورات        → PostsTab
  */
 
 import { useState } from 'react';
-import { FileText, LayoutList } from 'lucide-react';
-import ReviewsTab from '../components/adminCommunity/ReviewsTab';
-import PostsTab   from '../components/adminCommunity/PostsTab';
+import { FileText, LayoutList, LifeBuoy } from 'lucide-react';
+import ReviewsTab        from '../components/adminCommunity/reviews/ReviewsTab';
+import SupportTicketsTab from '../components/adminCommunity/support/SupportTicketsTab';
+import PostsTab          from '../components/adminCommunity/posts/PostsTab';
 
 const PRIMARY = '#EB6837';
 
 const TABS = [
-  { id: 'reviews', label: 'مشاكل المستخدمين', icon: FileText   },
-  { id: 'posts',   label: 'المنشورات',                  icon: LayoutList },
+  { id: 'reviews',  label: 'اراء المستخدمين',   icon: FileText   },
+  { id: 'support',  label: 'مشاكل المستخدمين',  icon: LifeBuoy   },
+  { id: 'posts',    label: 'المنشورات',           icon: LayoutList },
 ];
 
 export default function AdminCommunity() {
@@ -41,7 +29,7 @@ export default function AdminCommunity() {
       <div className="max-w-6xl mx-auto px-4 py-6">
 
         {/* ── Tab Switcher ── */}
-        <div className="flex gap-3 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm mb-6">
+        <div className="flex gap-2 sm:gap-3 p-3 sm:p-4 bg-white rounded-2xl border border-gray-100 shadow-sm mb-6">
           {TABS.map(({ id, label, icon: Icon }) => {
             const active = activeTab === id;
             return (
@@ -49,8 +37,8 @@ export default function AdminCommunity() {
                 key={id}
                 onClick={() => setActiveTab(id)}
                 className={`
-                  flex-1 flex items-center justify-center gap-2
-                  py-3 rounded-2xl  text-base font-medium
+                  flex-1 flex items-center justify-center gap-1.5 sm:gap-2
+                  py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-sm sm:text-base font-medium
                   transition-all duration-200 cursor-pointer
                   ${active
                     ? 'text-white shadow-sm'
@@ -59,11 +47,11 @@ export default function AdminCommunity() {
                 `}
                 style={active ? { background: PRIMARY } : {}}
               >
-                <Icon size={18} strokeWidth={active ? 2.5 : 2} />
-                {/* full label on sm+, short on mobile */}
-                <span className="hidden sm:inline">{label}</span>
-                <span className="sm:hidden text-sm">
-                  {id === 'reviews' ? 'التقييمات' : 'المنشورات'}
+                <Icon size={16} strokeWidth={active ? 2.5 : 2} className="shrink-0" />
+                {/* Full label on md+, short on mobile */}
+                <span className="hidden md:inline">{label}</span>
+                <span className="md:hidden text-xs">
+                  {id === 'reviews' ? 'التقييمات' : id === 'support' ? 'المشاكل' : 'المنشورات'}
                 </span>
               </button>
             );
@@ -72,7 +60,9 @@ export default function AdminCommunity() {
 
         {/* ── Tab Content ── */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden min-h-[400px]">
-          {activeTab === 'reviews' ? <ReviewsTab /> : <PostsTab />}
+          {activeTab === 'reviews' && <ReviewsTab />}
+          {activeTab === 'support' && <SupportTicketsTab />}
+          {activeTab === 'posts'   && <PostsTab />}
         </div>
 
       </div>
