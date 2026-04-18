@@ -173,7 +173,7 @@ export default function NotificationsPage() {
               </div>
             </div>
 
-            {unreadCount > 0 && (
+            {/* {unreadCount > 0 && (
               <button
                 onClick={() => markAllReadAction()}
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 transition-all text-sm font-medium"
@@ -181,7 +181,7 @@ export default function NotificationsPage() {
                 <CheckCheck className="w-4 h-4" />
                 تعليم الكل كمقروء
               </button>
-            )}
+            )} */}
           </div>
         </div>
 

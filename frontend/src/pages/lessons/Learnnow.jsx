@@ -11,6 +11,15 @@ import toast from "react-hot-toast";
 import levelone from "../../assets/images/levelone.png";
 import "../../styles/learnnow.css";
 
+
+const normalizeUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith('http://localhost') || url.startsWith('https://localhost')) {
+    return url.replace(/^https?:\/\/localhost:\d+/, '');
+  }
+  return url;
+};
+
 function StarRating({ lessonId, avgRating, numRatings }) {
   const queryClient = useQueryClient();
   const [hovered, setHovered] = useState(0);
@@ -178,7 +187,7 @@ export default function Learnnow() {
   className="learnnow-hero-thumb thumbnail-box"
 >
   <img
-    src={lesson?.thumbnailUrl || levelone}
+    src={normalizeUrl(lesson.thumbnailUrl)}
     alt={lesson?.title || "lesson thumbnail"}
   />
 
