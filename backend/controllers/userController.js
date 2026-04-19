@@ -110,9 +110,11 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
   const filter = {};
   if (req.query.role) filter.role = req.query.role;
 
+  const { role, ...restQuery } = req.query;
+
   const features = new APIFeatures(
     User.find(filter).where({ active: { $in: [true, false] } }),
-    req.query
+    restQuery
   )
     .filter()
     .sort()
