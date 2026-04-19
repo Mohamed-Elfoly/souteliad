@@ -15,6 +15,7 @@ router
 router
   .route('/:id')
   .delete(
+    authController.checkPermission('canDeleteContent'),
     commentController.checkCommentOwnership,
     commentController.deleteComment
   );

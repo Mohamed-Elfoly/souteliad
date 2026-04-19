@@ -129,5 +129,25 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
 });
 
 exports.getUser = factory.getOne(User);
-exports.updateUser = factory.updateOne(User);
+
+exports.updateUser = catchAsync(async (req, res, next) => {
+  const allowedFields = ['firstName', 'lastName', 'email', 'phoneNum', 'level', 'active', 'permissions'];
+  const updateData = {};
+  allowedFields.forEach((field) => {
+    if (req.body[field] !== undefined) updateData[field] = req.body[field];
+  });
+
+  const user = await User.findByIdAndUpdate(req.params.id, updateData, {
+    new: true,
+    runValidators: false,
+  });
+
+  if (!user) return next(new AppError('No user found with that ID', 404));
+
+  return res.status(200).json({
+    status: 'success',
+    data: { data: user },
+  });
+});
+
 exports.deleteUser = factory.deleteOne(User);

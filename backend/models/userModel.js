@@ -71,6 +71,9 @@ const userSchema = new mongoose.Schema({
   permissions: {
     canViewReports: { type: Boolean, default: false },
     canDeleteContent: { type: Boolean, default: false },
+    canManageLessons: { type: Boolean, default: false },
+    canManageQuizzes: { type: Boolean, default: false },
+    canDeleteLevel: { type: Boolean, default: false },
   },
   createdAt: {
     type: Date,

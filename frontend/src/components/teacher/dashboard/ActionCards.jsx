@@ -1,18 +1,25 @@
 import { useNavigate } from "react-router-dom";
+import useAuth from "../../../hooks/useAuth";
 import add  from "../../../assets/images/Frame 1984077838.png";
 import add2 from "../../../assets/images/Frame 1984077847.png";
 
-const CARDS = [
-  { label: "إضافة درس جديد",       img: add,  route: "/AddLessonPage" },
-  { label: "إضافة أسئلة الامتحانات", img: add2, route: "/AddQuizPage"  },
+const ALL_CARDS = [
+  { label: "إضافة درس جديد",         img: add,  route: "/AddLessonPage", permission: "canManageLessons" },
+  { label: "إضافة أسئلة الامتحانات", img: add2, route: "/AddQuizPage",   permission: "canManageQuizzes" },
 ];
 
 export default function ActionCards() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const perms = user?.permissions || {};
+
+  const cards = ALL_CARDS.filter((c) => perms[c.permission]);
+
+  if (cards.length === 0) return null;
 
   return (
     <div className="flex flex-wrap gap-5 mb-8" dir="rtl">
-      {CARDS.map(({ label, img, route }) => (
+      {cards.map(({ label, img, route }) => (
         <button
           key={route}
           onClick={() => navigate(route)}
