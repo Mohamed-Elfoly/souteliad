@@ -22,12 +22,14 @@ const normalizeUrl = (url) => {
 
 function StarRating({ lessonId, avgRating, numRatings }) {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [hovered, setHovered] = useState(0);
 
   const { data: myRatingData } = useQuery({
-    queryKey: ["my-rating", lessonId],
+    queryKey: ["my-rating", lessonId, user?._id || user?.id],
     queryFn: () => getMyRating(lessonId),
-    enabled: !!lessonId,
+    enabled: !!lessonId && !!user,
+    staleTime: 0,
   });
 
   const myRating = myRatingData?.data?.data?.data;
@@ -37,7 +39,7 @@ function StarRating({ lessonId, avgRating, numRatings }) {
     mutationFn: (rating) => addRating(lessonId, rating),
     onSuccess: () => {
       toast.success("شكراً على تقييمك!");
-      queryClient.invalidateQueries({ queryKey: ["my-rating", lessonId] });
+      queryClient.invalidateQueries({ queryKey: ["my-rating", lessonId, user?._id || user?.id] });
       queryClient.invalidateQueries({ queryKey: ["lesson", lessonId] });
       queryClient.invalidateQueries({ queryKey: ["level-lessons"] });
     },
@@ -46,7 +48,7 @@ function StarRating({ lessonId, avgRating, numRatings }) {
     },
   });
 
-  const displayRating = alreadyRated ? myRating : hovered || avgRating;
+  const displayRating = alreadyRated ? myRating : hovered;
 
   return (
     <div className="rating-widget">
