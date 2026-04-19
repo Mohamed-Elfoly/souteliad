@@ -663,7 +663,7 @@ export default function NotificationDropdown({ isOpen, onClose }) {
   const handleClick = (notif) => {
     if (!notif.read) markRead(notif._id);
     onClose();
-    if (notif.link) navigate(notif.link);
+    navigate('/notifications');
   };
 
   const handleViewAll = () => {
