@@ -51,8 +51,7 @@
   cursor: pointer;
   transition: background 0.2s, transform 0.15s;
   font-family: "Rubik", sans-serif;
-  white-space: nowrap;
-  flex-shrink: 0;
+  white-space: nowrap
 }
 
 .community-new-btn:hover {
@@ -802,8 +801,9 @@
   }
   .community-header {
     flex-direction: column;
-    align-items: flex-end;
+    align-items: center;
     gap: 14px;
+    margin-bottom: 1rem;
   }
   .community-new-btn {
     width: 100%;
