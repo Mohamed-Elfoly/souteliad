@@ -724,7 +724,7 @@ export default function NotificationDropdown({ isOpen, onClose }) {
             <h3 className="font-semibold text-gray-900">الإشعارات</h3>
           </div>
           {notifications.length > 0 && (
-            <button onClick={handleViewAll} className="text-sm text-orange-500 hover:text-orange-600 font-medium transition-colors">عرض الكل</button>
+            <button onClick={handleViewAll} className="text-sm text-orange-500 hover:text-orange-600 font-medium transition-colors cursor-pointer">عرض الكل</button>
           )}
         </div>
         <div className="max-h-[480px] overflow-y-auto">
@@ -740,11 +740,11 @@ export default function NotificationDropdown({ isOpen, onClose }) {
             </div>
           )}
         </div>
-        {!isLoading && notifications.length > 0 && (
+        {/* {!isLoading && notifications.length > 0 && (
           <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/50">
             <button onClick={handleViewAll} className="w-full text-center text-sm text-orange-500 font-medium py-1 transition-colors">عرض جميع الإشعارات</button>
           </div>
-        )}
+        )} */}
       </div>
     </>
   );

@@ -257,47 +257,6 @@ export default function Navbar() {
               )}
 
               {/* Settings dropdown */}
-              {/* <div className="relative" ref={settingsRef}>
-                <button
-                  className={`
-                    p-2 rounded-lg transition-colors
-                    ${settingsOpen ? 'bg-orange-50 text-[#EB6837]' : 'text-gray-500 hover:bg-gray-100'}
-                  `}
-                  onClick={() => { setSettingsOpen((o) => !o); setBellOpen(false); }}
-                >
-                  <Settings size={20} />
-                </button>
-                {settingsOpen && (
-                  <div
-                    className="
-                      absolute top-[calc(100%+10px)] left-1/2 -translate-x-1/2
-                      bg-white border border-gray-200 rounded-xl shadow-lg
-                      min-w-[220px] z-50 overflow-hidden
-                      animate-[dropdown-in_0.18s_ease]
-                    "
-                    dir="rtl"
-                  >
-                    {settingsItems.map((item) => (
-                      <Link
-                        key={item.to}
-                        to={item.to}
-                        className="
-                          block px-5 py-3.5
-                          text-sm font-medium text-gray-700
-                          hover:bg-orange-50 hover:text-[#EB6837]
-                          border-b border-gray-50 last:border-0
-                          transition-colors
-                        "
-                        onClick={() => setSettingsOpen(false)}
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div> */}
-
-              {/* Settings dropdown */}
 <div className="relative" ref={settingsRef}>
   <button
     className={`p-2 rounded-lg transition-colors ${settingsOpen ? 'bg-orange-50 text-[#EB6837]' : 'text-gray-500 hover:bg-gray-100'}`}

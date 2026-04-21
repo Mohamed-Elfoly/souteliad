@@ -1,18 +1,23 @@
-* {
-  margin: 0;
-  padding: 0;
+/* ================= LAYOUT ================= */
+/* NOTE: global * reset removed — it was overriding Tailwind navbar styles.
+   Reset is now scoped only to .chat-layout children. */
+
+.chat-layout,
+.chat-layout *,
+.chat-layout *::before,
+.chat-layout *::after {
   box-sizing: border-box;
   font-family: "Rubik", sans-serif;
 }
 
-/* ================= LAYOUT ================= */
-
 .chat-layout {
   display: grid;
   grid-template-columns: 1fr 260px;
-  min-height: 100vh;
+  min-height: calc(100vh - 64px);
+  height: calc(100vh - 64px);
   background: #ffffff;
   direction: rtl;
+  overflow: hidden;
 }
 
 /* ================= SIDEBAR ================= */
@@ -22,6 +27,7 @@
   padding: 20px;
   border-right: 1px solid #DDDEDF;
   flex-shrink: 0;
+  overflow-y: auto;
 }
 
 .chat-search-box {
@@ -171,13 +177,14 @@
 /* ================= VOICE PAGE ================= */
 
 .voice-container {
-  min-height: 100vh;
+  min-height: calc(100vh - 64px);
   background: #ffffff;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 20px;
   direction: rtl;
+  overflow-y: auto;
 }
 
 .voice-card {
