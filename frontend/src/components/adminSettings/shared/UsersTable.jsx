@@ -49,7 +49,7 @@ export default function UsersTable({
                 <span className="flex items-center gap-1">الاسم <SortIcon col="firstName" /></span>
               </th>
               <th className={thClass}>البريد الإلكتروني</th>
-              <th className={thClass}>رقم الهاتف</th>
+              {/* <th className={thClass}>رقم الهاتف</th> */}
               <th
                 className={`${thClass} cursor-pointer hover:text-gray-700`}
                 onClick={() => onSort("role")}
@@ -106,9 +106,9 @@ export default function UsersTable({
                     <td className={`${tdClass} max-w-[180px]`}>
                       <span className="truncate block" title={user.email}>{user.email}</span>
                     </td>
-                    <td className={tdClass}>
+                    {/* <td className={tdClass}>
                       <span dir="ltr">{user.phoneNum || "—"}</span>
-                    </td>
+                    </td> */}
                     <td className={tdClass}>
                       <Badge variant={user.role === "teacher" ? "teacher" : user.role === "admin" ? "admin" : "student"} />
                     </td>

@@ -9,7 +9,7 @@ export default function UserCard({ user, onEdit, onDelete, onToggleActive, isLoa
   const fullName = `${user.firstName} ${user.lastName}`;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group">
+    <div className="bg-white   rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group">
       {/* Card Top */}
       <div className="p-4 border-b border-gray-50">
         <div className="flex items-start justify-between gap-3">
@@ -41,12 +41,12 @@ export default function UserCard({ user, onEdit, onDelete, onToggleActive, isLoa
           <Mail size={13} className="text-gray-400 flex-shrink-0" />
           <span className="truncate">{user.email}</span>
         </div>
-        {user.phoneNum && (
+        {/* {user.phoneNum && (
           <div className="flex items-center gap-2 text-xs text-gray-600">
             <Phone size={13} className="text-gray-400 flex-shrink-0" />
             <span dir="ltr">{user.phoneNum}</span>
           </div>
-        )}
+        )} */}
         {user.specialty && (
           <div className="text-xs text-gray-500 bg-gray-50 rounded-lg px-2.5 py-1.5 mt-1">
             {user.specialty}

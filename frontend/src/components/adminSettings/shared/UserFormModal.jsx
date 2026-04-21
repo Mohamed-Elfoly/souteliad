@@ -97,7 +97,7 @@ export default function UserFormModal({
             </div>
           )}
 
-          <div>
+          {/* <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1.5">رقم الهاتف</label>
             <input
               type="tel"
@@ -107,9 +107,9 @@ export default function UserFormModal({
               className={inputClass}
               dir="ltr"
             />
-          </div>
+          </div> */}
 
-          {userType === "teacher" && (
+          {/* {userType === "teacher" && (
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1.5">التخصص</label>
               <input
@@ -120,9 +120,9 @@ export default function UserFormModal({
                 className={inputClass}
               />
             </div>
-          )}
+          )} */}
 
-          {userType === "student" && (
+          {/* {userType === "student" && (
             <div>
               <label className="block text-xs font-semibold text-gray-600 mb-1.5">المستوى</label>
               <select
@@ -136,7 +136,7 @@ export default function UserFormModal({
                 <option value="مستوى 3">مستوى 3</option>
               </select>
             </div>
-          )}
+          )} */}
 
           {/* Footer Actions */}
           <div className="flex gap-3 pt-2">

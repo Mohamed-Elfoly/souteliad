@@ -120,7 +120,7 @@ export default function StudentsPanel() {
   const openAdd = () => { setEditingUser(null); setForm(emptyForm); setShowModal(true); };
   const openEdit = (user) => {
     setEditingUser(user);
-    setForm({ firstName: user.firstName, lastName: user.lastName, email: user.email, phoneNum: user.phoneNum || "", level: user.level || "" });
+    setForm({ firstName: user.firstName, lastName: user.lastName, email: user.email || "", level: user.level || "" });
     setShowModal(true);
   };
   const closeModal = () => { setShowModal(false); setEditingUser(null); setForm(emptyForm); };
