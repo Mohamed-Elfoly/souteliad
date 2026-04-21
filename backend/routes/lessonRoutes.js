@@ -20,6 +20,7 @@ router.post(
   '/',
   authController.protect,
   authController.restrictTo('teacher', 'admin'),
+  authController.checkPermission('canManageLessons'),
   uploadLessonMedia,
   lessonController.setLevelTeacherIds,
   lessonController.processMediaFields,
@@ -30,6 +31,7 @@ router.patch(
   '/:id',
   authController.protect,
   authController.restrictTo('teacher', 'admin'),
+  authController.checkPermission('canManageLessons'),
   uploadLessonMedia,
   lessonController.processMediaFields,
   lessonController.updateLesson
@@ -39,6 +41,7 @@ router.delete(
   '/:id',
   authController.protect,
   authController.restrictTo('teacher', 'admin'),
+  authController.checkPermission('canManageLessons'),
   lessonController.deleteLesson
 );
 

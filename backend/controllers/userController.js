@@ -1,6 +1,8 @@
+const bcrypt = require('bcryptjs');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
+const APIFeatures = require('../utils/apiFeatures');
 const factory = require('./handlerFactory');
 
 const filterObj = (obj, ...allowedFields) => {
@@ -66,26 +68,31 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
 });
 
 exports.createUser = catchAsync(async (req, res, next) => {
-  const { firstName, lastName, email, password, role } = req.body;
+  const { firstName, lastName, email, password, phoneNum, level, role } = req.body;
 
   if (!firstName || !lastName || !email || !password) {
     return next(new AppError('Please provide firstName, lastName, email and password', 400));
   }
 
-  const newUser = await User.create({
+  const hashedPassword = await bcrypt.hash(password, 12);
+
+  const newUser = await User.collection.insertOne({
     firstName,
     lastName,
     email,
-    password,
-    passwordConfirm: password,
+    phoneNum: phoneNum || undefined,
+    level: level || undefined,
     role: role || 'user',
+    password: hashedPassword,
+    active: true,
+    createdAt: new Date(),
+    profilePicture: 'default.jpg',
+    permissions: { canViewReports: false, canDeleteContent: false },
   });
-
-  newUser.password = undefined;
 
   return res.status(201).json({
     status: 'success',
-    data: { user: newUser },
+    data: { user: { _id: newUser.insertedId, firstName, lastName, email, role: role || 'user' } },
   });
 });
 
@@ -99,7 +106,50 @@ exports.getTeachersManage = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getAllUsers = factory.getAll(User);
+exports.getAllUsers = catchAsync(async (req, res, next) => {
+  const filter = {};
+  if (req.query.role) filter.role = req.query.role;
+
+  const { role, ...restQuery } = req.query;
+
+  const features = new APIFeatures(
+    User.find(filter).where({ active: { $in: [true, false] } }),
+    restQuery
+  )
+    .filter()
+    .sort()
+    .limitFields()
+    .paginate();
+
+  const users = await features.query;
+
+  return res.status(200).json({
+    status: 'success',
+    results: users.length,
+    data: { data: users },
+  });
+});
+
 exports.getUser = factory.getOne(User);
-exports.updateUser = factory.updateOne(User);
+
+exports.updateUser = catchAsync(async (req, res, next) => {
+  const allowedFields = ['firstName', 'lastName', 'email', 'phoneNum', 'level', 'active', 'permissions'];
+  const updateData = {};
+  allowedFields.forEach((field) => {
+    if (req.body[field] !== undefined) updateData[field] = req.body[field];
+  });
+
+  const user = await User.findByIdAndUpdate(req.params.id, updateData, {
+    new: true,
+    runValidators: false,
+  });
+
+  if (!user) return next(new AppError('No user found with that ID', 404));
+
+  return res.status(200).json({
+    status: 'success',
+    data: { data: user },
+  });
+});
+
 exports.deleteUser = factory.deleteOne(User);

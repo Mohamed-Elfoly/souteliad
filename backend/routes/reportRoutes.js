@@ -11,6 +11,7 @@ router
   .route('/')
   .get(
     authController.restrictTo('teacher', 'admin'),
+    authController.checkPermission('canViewReports'),
     reportController.getAllReports
   )
   .post(reportController.setPostUserId, reportController.createReport);
@@ -19,6 +20,7 @@ router
   .route('/:id')
   .patch(
     authController.restrictTo('teacher', 'admin'),
+    authController.checkPermission('canViewReports'),
     reportController.updateReport
   );
 

@@ -89,10 +89,19 @@ const teacherBaseItems = [
 
 export default function Sidebar() {
   const { user } = useAuth();
+  const perms = user?.permissions || {};
 
   const teacherItems = [
-    ...teacherBaseItems,
-    ...(user?.permissions?.canViewReports
+    { to: '/Dashboard',       icon: Layers,        label: 'لوحة التعليم' },
+    { to: '/StudentsTeacher', icon: Users,         label: 'الطلاب' },
+    ...(perms.canManageLessons
+      ? [{ to: '/AddLessonPage', icon: FilePen, label: 'الدروس و الامتحانات' }]
+      : []),
+    { to: '/Community',       icon: MessageSquare, label: 'المجتمع' },
+    ...(perms.canDeleteContent
+      ? [{ to: '/ManageContent', icon: LayoutList, label: 'إدارة المحتوى' }]
+      : []),
+    ...(perms.canViewReports
       ? [{ to: '/Reports', icon: FileText, label: 'تقارير' }]
       : []),
   ];

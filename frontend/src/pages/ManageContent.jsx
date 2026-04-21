@@ -8,6 +8,7 @@ import { getAllLevels, deleteLevel } from '../api/levelApi';
 import { getAllLessons, deleteLesson } from '../api/lessonApi';
 import { getQuizByLesson, getQuestions, deleteQuestion } from '../api/quizApi';
 import toast from 'react-hot-toast';
+import useAuth from '../hooks/useAuth';
 import '../styles/login.css';
 
 const TYPE_LABELS = {
@@ -31,7 +32,7 @@ function ConfirmDelete({ label, onConfirm, onCancel, isLoading }) {
 }
 
 // ─── Question row ─────────────────────────────────────────────────────────────
-function QuestionRow({ question, quizId }) {
+function QuestionRow({ question, quizId, canDelete }) {
   const queryClient = useQueryClient();
   const [confirming, setConfirming] = useState(false);
 
@@ -57,7 +58,7 @@ function QuestionRow({ question, quizId }) {
         <span className={`mc-badge mc-badge-${question.questionType}`}>
           {TYPE_LABELS[question.questionType] || question.questionType}
         </span>
-        {!confirming && (
+        {!confirming && canDelete && (
           <button className="mc-del-btn" onClick={() => setConfirming(true)} title="حذف السؤال">
             <Trash2 size={13} />
           </button>
@@ -76,7 +77,7 @@ function QuestionRow({ question, quizId }) {
 }
 
 // ─── Lesson row ───────────────────────────────────────────────────────────────
-function LessonRow({ lesson, levelId }) {
+function LessonRow({ lesson, levelId, canDeleteLesson, canDeleteQuiz }) {
   const queryClient = useQueryClient();
   const [expanded, setExpanded] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -121,7 +122,7 @@ function LessonRow({ lesson, levelId }) {
         </div>
         <span className="mc-label">{lesson.title}</span>
         <span className="mc-order-badge">درس {lesson.lessonOrder}</span>
-        {!confirming && (
+        {!confirming && canDeleteLesson && (
           <button className="mc-del-btn" onClick={() => setConfirming(true)} title="حذف الدرس">
             <Trash2 size={13} />
           </button>
@@ -147,7 +148,7 @@ function LessonRow({ lesson, levelId }) {
             </div>
           ) : (
             questions.map((q) => (
-              <QuestionRow key={q._id} question={q} quizId={quiz._id} />
+              <QuestionRow key={q._id} question={q} quizId={quiz._id} canDelete={canDeleteQuiz} />
             ))
           )}
         </div>
@@ -157,7 +158,7 @@ function LessonRow({ lesson, levelId }) {
 }
 
 // ─── Level row ────────────────────────────────────────────────────────────────
-function LevelRow({ level }) {
+function LevelRow({ level, canDeleteLevel, canDeleteLesson, canDeleteQuiz }) {
   const queryClient = useQueryClient();
   const [expanded, setExpanded] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -193,7 +194,7 @@ function LevelRow({ level }) {
         </div>
         <span className="mc-label mc-label-level">{level.title}</span>
         <ChevronLeft size={15} className={`mc-chevron mc-chevron-level${expanded ? ' is-open' : ''}`} />
-        {!confirming && (
+        {!confirming && canDeleteLevel && (
           <button
             className="mc-del-btn mc-del-btn-level"
             onClick={(e) => { e.stopPropagation(); setConfirming(true); }}
@@ -223,7 +224,7 @@ function LevelRow({ level }) {
             </div>
           ) : (
             lessons.map((l) => (
-              <LessonRow key={l._id} lesson={l} levelId={level._id} />
+              <LessonRow key={l._id} lesson={l} levelId={level._id} canDeleteLesson={canDeleteLesson} canDeleteQuiz={canDeleteQuiz} />
             ))
           )}
         </div>
@@ -234,6 +235,14 @@ function LevelRow({ level }) {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function ManageContent() {
+  const { user } = useAuth();
+  const perms = user?.permissions || {};
+  const isAdmin = user?.role === 'admin';
+
+  const canDeleteLevel  = isAdmin || perms.canDeleteLevel;
+  const canDeleteLesson = isAdmin || perms.canManageLessons;
+  const canDeleteQuiz   = isAdmin || perms.canManageQuizzes;
+
   const { data: levelsData, isLoading } = useQuery({
     queryKey: ['mc-levels'],
     queryFn: getAllLevels,
@@ -271,7 +280,15 @@ export default function ManageContent() {
         </div>
       ) : (
         <div className="mc-tree">
-          {levels.map((lv) => <LevelRow key={lv._id} level={lv} />)}
+          {levels.map((lv) => (
+            <LevelRow
+              key={lv._id}
+              level={lv}
+              canDeleteLevel={canDeleteLevel}
+              canDeleteLesson={canDeleteLesson}
+              canDeleteQuiz={canDeleteQuiz}
+            />
+          ))}
         </div>
       )}
 

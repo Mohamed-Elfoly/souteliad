@@ -24,6 +24,10 @@ router
   .route('/:id')
   .get(postController.getPost)
   .patch(postController.updatePost)
-  .delete(postController.checkPostOwnership, postController.deletePost);
+  .delete(
+    authController.checkPermission('canDeleteContent'),
+    postController.checkPostOwnership,
+    postController.deletePost
+  );
 
 module.exports = router;

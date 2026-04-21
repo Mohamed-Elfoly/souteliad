@@ -16,6 +16,7 @@ router
   .get(quizController.setFilterObj, quizController.getAllQuizzes)
   .post(
     authController.restrictTo('teacher', 'admin'),
+    authController.checkPermission('canManageQuizzes'),
     quizController.setLessonTeacherIds,
     quizController.createQuiz
   );
@@ -25,10 +26,12 @@ router
   .get(quizController.getQuiz)
   .patch(
     authController.restrictTo('teacher', 'admin'),
+    authController.checkPermission('canManageQuizzes'),
     quizController.updateQuiz
   )
   .delete(
     authController.restrictTo('teacher', 'admin'),
+    authController.checkPermission('canManageQuizzes'),
     quizController.deleteQuiz
   );
 

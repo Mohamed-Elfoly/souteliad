@@ -128,6 +128,12 @@ exports.restrictTo =
     next();
   };
 
+exports.checkPermission = (permission) => (req, res, next) => {
+  if (req.user.role === 'admin') return next();
+  if (req.user.permissions && req.user.permissions[permission]) return next();
+  return next(new AppError('You do not have permission to perform this action', 403));
+};
+
 exports.forgotPassword = catchAsync(async (req, res, next) => {
   // 1) Get user based on POSTed email
   const user = await User.findOne({ email: req.body.email });

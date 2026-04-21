@@ -8,10 +8,11 @@ import Toggle from "./shared/Toggle";
 import Badge from "./shared/Badge";
 
 const PERMISSIONS = [
-  { key: "canViewReports", label: "الوصول للتقارير", description: "يمكنه عرض تقارير الطلاب والإحصائيات" },
-  { key: "canDeleteContent", label: "حذف المحتوى", description: "يمكنه حذف المنشورات والتعليقات" },
-  { key: "canManageLessons", label: "إدارة الدروس", description: "يمكنه إضافة وتعديل وحذف الدروس" },
+  { key: "canViewReports",  label: "الوصول للتقارير",  description: "يمكنه عرض تقارير الطلاب والإحصائيات" },
+  { key: "canDeleteContent", label: "حذف المحتوى",    description: "يمكنه حذف المنشورات والتعليقات" },
+  { key: "canManageLessons", label: "إدارة الدروس",   description: "يمكنه إضافة وتعديل وحذف الدروس" },
   { key: "canManageQuizzes", label: "إدارة الاختبارات", description: "يمكنه إنشاء وتعديل الاختبارات" },
+  { key: "canDeleteLevel",  label: "حذف المستويات",   description: "يمكنه حذف المستويات وجميع دروسها" },
 ];
 
 export default function PermissionsPanel() {
@@ -36,6 +37,7 @@ export default function PermissionsPanel() {
         canDeleteContent: u.permissions?.canDeleteContent || false,
         canManageLessons: u.permissions?.canManageLessons || false,
         canManageQuizzes: u.permissions?.canManageQuizzes || false,
+        canDeleteLevel: u.permissions?.canDeleteLevel || false,
       };
     });
     setPermsState(init);
