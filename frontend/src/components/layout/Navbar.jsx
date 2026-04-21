@@ -979,7 +979,7 @@ const allSettingsItems = [
 export default function Navbar() {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
-  const isStaff = user?.role === ROLES.ADMIN || user?.role === ROLES.TEACHER;
+  const isStaff = user?.role === ROLES.ADMIN ;
   const settingsItems = allSettingsItems.filter((item) => !item.hideFor.includes(user?.role));
   const dashboardLink = user?.role === ROLES.ADMIN ? '/Students' : '/Dashboard';
 
@@ -1182,12 +1182,12 @@ export default function Navbar() {
                 <span className="w-2 h-2 bg-green-400 rounded-full border-[1.5px] border-white shrink-0 inline-block" />
               </Link>
 
-              {/* Bell (students only) */}
+              {/* Bell  */}
               {!isStaff && (
                 <div className="relative" ref={bellRef}>
                   <button
                     className={`
-                      p-2 rounded-lg transition-colors relative
+                      p-2 rounded-lg transition-colors relative cursor-pointer
                       ${bellOpen ? 'bg-orange-50 text-[#EB6837]' : 'text-gray-500 hover:bg-gray-100'}
                     `}
                     onClick={() => { setBellOpen((o) => !o); setSettingsOpen(false); }}
