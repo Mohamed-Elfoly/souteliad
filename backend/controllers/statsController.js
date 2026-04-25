@@ -7,6 +7,69 @@ const Level = require('../models/levelModel');
 const LessonProgress = require('../models/lessonProgressModel');
 const StudentProgressReport = require('../models/studentProgressReportModel');
 
+exports.getMyStats = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+
+  const [allLessons, completedProgress, attempts] = await Promise.all([
+    Lesson.find()
+      .populate('levelId', 'title levelOrder')
+      .sort({ levelId: 1, lessonOrder: 1 })
+      .select('_id title levelId lessonOrder avgRating duration thumbnailUrl'),
+    LessonProgress.find({ userId }).select('lessonId'),
+    QuizAttempt.find({ userId }).select('passed score totalMarks'),
+  ]);
+
+  const completedIds = new Set(completedProgress.filter((p) => p.lessonId).map((p) => p.lessonId.toString()));
+  const totalLessons = allLessons.length;
+  const completedLessons = completedIds.size;
+  const progressPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+
+  const nextLesson = allLessons.find((l) => !completedIds.has(l._id.toString())) ?? allLessons.at(-1);
+
+  let levelTotalLessons = 0;
+  let levelCompletedLessons = 0;
+  let levelProgress = 0;
+
+  const nextLevelId = nextLesson?.levelId?._id ?? nextLesson?.levelId;
+  if (nextLevelId) {
+    const lvId = nextLevelId.toString();
+    const lvLessons = allLessons.filter((l) => {
+      const lid = l.levelId?._id ?? l.levelId;
+      return lid && lid.toString() === lvId;
+    });
+    levelTotalLessons = lvLessons.length;
+    levelCompletedLessons = lvLessons.filter((l) => completedIds.has(l._id.toString())).length;
+    levelProgress = levelTotalLessons > 0 ? Math.round((levelCompletedLessons / levelTotalLessons) * 100) : 0;
+  }
+
+  const totalQuizzes = attempts.length;
+  const passedQuizzes = attempts.filter((a) => a.passed).length;
+  const avgScore = totalQuizzes > 0
+    ? Math.round(attempts.reduce((sum, a) => sum + (a.totalMarks > 0 ? (a.score / a.totalMarks) * 100 : 0), 0) / totalQuizzes)
+    : 0;
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      completedLessons,
+      totalLessons,
+      progressPercent,
+      levelTotalLessons,
+      levelCompletedLessons,
+      levelProgress,
+      currentLessonId: nextLesson?._id ?? null,
+      currentLesson: nextLesson?.title ?? null,
+      currentLessonRating: nextLesson?.avgRating ?? null,
+      currentLessonDuration: nextLesson?.duration ?? null,
+      currentLessonThumbnail: nextLesson?.thumbnailUrl ?? null,
+      currentLevelId: nextLesson?.levelId?._id ?? nextLesson?.levelId ?? null,
+      totalQuizzes,
+      passedQuizzes,
+      avgScore,
+    },
+  });
+});
+
 exports.getPublicStats = catchAsync(async (req, res) => {
   const [totalUsers, totalLessons, totalLevels] = await Promise.all([
     User.countDocuments({ role: 'user', active: true }),

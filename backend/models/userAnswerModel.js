@@ -12,7 +12,7 @@ const userAnswerSchema = new mongoose.Schema({
     required: [true, 'An answer must belong to a question'],
   },
   selectedOptionId: {
-    type: Number,
+    type: String,
     required: [true, 'An answer must have a selected option'],
   },
 });

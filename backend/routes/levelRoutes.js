@@ -10,6 +10,7 @@ router.use('/:levelId/lessons', lessonRouter);
 
 // Public GET routes (no auth required)
 router.get('/', levelController.getAllLevels);
+router.get('/with-lessons', levelController.getAllLevelsWithLessons);
 router.get('/:id', levelController.getLevel);
 
 // Protected mutation routes
