@@ -7,6 +7,60 @@ import '../../../../models/comment_model.dart';
 import '../../../../providers/auth_provider.dart';
 import '../../data/community_service.dart';
 
+// ── Reusable avatar widget ────────────────────────────────────────────────────
+
+class _Avatar extends StatelessWidget {
+  final String? photoUrl;
+  final String initials;
+  final double size;
+  final double fontSize;
+
+  const _Avatar({
+    required this.photoUrl,
+    required this.initials,
+    required this.size,
+    required this.fontSize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (photoUrl != null && photoUrl!.isNotEmpty) {
+      return ClipOval(
+        child: Image.network(
+          photoUrl!,
+          width: size,
+          height: size,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _fallback(),
+        ),
+      );
+    }
+    return _fallback();
+  }
+
+  Widget _fallback() {
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
+        color: Color(0xFFEF865F),
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text(
+          initials,
+          style: TextStyle(
+            fontFamily: 'Rubik',
+            fontSize: fontSize,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 final _postsProvider = FutureProvider<List<PostModel>>((ref) async {
   return communityService.getPosts();
 });
@@ -140,6 +194,7 @@ class CommunityScreen extends ConsumerWidget {
       itemCount: posts.length,
       separatorBuilder: (_, __) => const SizedBox(height: 16),
       itemBuilder: (_, i) => _PostCard(
+        key: ValueKey(posts[i].id),
         post: posts[i],
         currentUserId: currentUserId ?? '',
         onLike: () async {
@@ -147,8 +202,10 @@ class CommunityScreen extends ConsumerWidget {
           ref.invalidate(_postsProvider);
         },
         onDelete: () async {
-          await communityService.deletePost(posts[i].id);
-          ref.invalidate(_postsProvider);
+          try {
+            await communityService.deletePost(posts[i].id);
+            ref.refresh(_postsProvider);
+          } catch (_) {}
         },
         onComment: () => _showCommentsSheet(context, ref, posts[i]),
       ),
@@ -187,7 +244,7 @@ class CommunityScreen extends ConsumerWidget {
 
 // ── Post card ─────────────────────────────────────────────────────────────────
 
-class _PostCard extends StatelessWidget {
+class _PostCard extends StatefulWidget {
   final PostModel post;
   final String currentUserId;
   final VoidCallback onLike;
@@ -195,12 +252,28 @@ class _PostCard extends StatelessWidget {
   final VoidCallback onComment;
 
   const _PostCard({
+    super.key,
     required this.post,
     required this.currentUserId,
     required this.onLike,
     required this.onDelete,
     required this.onComment,
   });
+
+  @override
+  State<_PostCard> createState() => _PostCardState();
+}
+
+class _PostCardState extends State<_PostCard> {
+  late bool _liked;
+  late int _likesCount;
+
+  @override
+  void initState() {
+    super.initState();
+    _liked = widget.post.isLiked;
+    _likesCount = widget.post.likesCount;
+  }
 
   String _formatDate(DateTime date) {
     final now = DateTime.now();
@@ -212,11 +285,19 @@ class _PostCard extends StatelessWidget {
     return '${date.day}/${date.month}/${date.year}';
   }
 
+  void _toggleLike() {
+    setState(() {
+      _liked = !_liked;
+      _likesCount += _liked ? 1 : -1;
+    });
+    widget.onLike();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final author = post.author;
+    final author = widget.post.author;
     final initials = author?.initials ?? '؟';
-    final isOwner = author?.id == currentUserId;
+    final isOwner = author?.id == widget.currentUserId;
 
     return Container(
       width: double.infinity,
@@ -230,24 +311,11 @@ class _PostCard extends StatelessWidget {
         textDirection: TextDirection.rtl,
         children: [
           // Avatar — rightmost
-          Container(
-            width: 42,
-            height: 42,
-            decoration: const BoxDecoration(
-              color: Color(0xFFEF865F),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                initials,
-                style: const TextStyle(
-                  fontFamily: 'Rubik',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-            ),
+          _Avatar(
+            photoUrl: widget.post.author?.profilePicture,
+            initials: widget.post.author?.initials ?? '؟',
+            size: 42,
+            fontSize: 16,
           ),
           const SizedBox(width: 10),
           // Content
@@ -262,7 +330,7 @@ class _PostCard extends StatelessWidget {
                     // Name
                     Flexible(
                       child: Text(
-                        author?.fullName ?? 'مستخدم',
+                        widget.post.author?.fullName ?? 'مستخدم',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppTextStyles.body.copyWith(
@@ -275,7 +343,7 @@ class _PostCard extends StatelessWidget {
                     const SizedBox(width: 6),
                     // Date
                     Text(
-                      _formatDate(post.createdAt),
+                      _formatDate(widget.post.createdAt),
                       style: AppTextStyles.small.copyWith(
                         color: const Color(0xFFADB5BB),
                         fontSize: 12,
@@ -286,7 +354,7 @@ class _PostCard extends StatelessWidget {
                     // Delete icon — far left
                     if (isOwner)
                       GestureDetector(
-                        onTap: () => _confirmDelete(context),
+                        onTap: _confirmDelete,
                         child: const Icon(Icons.delete_outline_rounded,
                             color: Color(0xFFADB5BB), size: 18),
                       ),
@@ -295,7 +363,7 @@ class _PostCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 // Post content
                 Text(
-                  post.content,
+                  widget.post.content,
                   textAlign: TextAlign.right,
                   textDirection: TextDirection.rtl,
                   style: AppTextStyles.small.copyWith(
@@ -305,26 +373,29 @@ class _PostCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                // Like + comment — right-aligned, icon to the right of text
+                // Like + comment
                 Row(
                   textDirection: TextDirection.rtl,
                   children: [
                     // أعجبني
                     GestureDetector(
-                      onTap: onLike,
+                      onTap: _toggleLike,
                       child: Row(
                         textDirection: TextDirection.rtl,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.favorite_border_rounded,
-                              color: Color(0xFF868687), size: 18),
+                          Icon(
+                            _liked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                            color: _liked ? Colors.red : const Color(0xFF868687),
+                            size: 18,
+                          ),
                           const SizedBox(width: 4),
                           Text(
-                            post.likesCount > 0
-                                ? '${post.likesCount} أعجبني'
+                            _likesCount > 0
+                                ? '$_likesCount أعجبني'
                                 : 'أعجبني',
                             style: AppTextStyles.small.copyWith(
-                              color: const Color(0xFF868687),
+                              color: _liked ? Colors.red : const Color(0xFF868687),
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
@@ -335,7 +406,7 @@ class _PostCard extends StatelessWidget {
                     const SizedBox(width: 16),
                     // تعليق
                     GestureDetector(
-                      onTap: onComment,
+                      onTap: widget.onComment,
                       child: Row(
                         textDirection: TextDirection.rtl,
                         mainAxisSize: MainAxisSize.min,
@@ -344,8 +415,8 @@ class _PostCard extends StatelessWidget {
                               color: Color(0xFF868687), size: 17),
                           const SizedBox(width: 4),
                           Text(
-                            post.commentsCount > 0
-                                ? '${post.commentsCount} تعليق'
+                            widget.post.commentsCount > 0
+                                ? '${widget.post.commentsCount} تعليق'
                                 : 'تعليق',
                             style: AppTextStyles.small.copyWith(
                               color: const Color(0xFF868687),
@@ -366,8 +437,9 @@ class _PostCard extends StatelessWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context) {
-    showDialog(
+  void _confirmDelete() {
+    final onDelete = widget.onDelete;
+    showDialog<bool>(
       context: context,
       builder: (_) => Directionality(
         textDirection: TextDirection.rtl,
@@ -376,22 +448,21 @@ class _PostCard extends StatelessWidget {
           content: const Text('هل تريد حذف هذا المنشور؟'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.of(context, rootNavigator: true).pop(false),
               child: const Text('إلغاء',
                   style: TextStyle(color: AppColors.textSecondary)),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                onDelete();
-              },
+              onPressed: () => Navigator.of(context, rootNavigator: true).pop(true),
               child: const Text('حذف',
                   style: TextStyle(color: AppColors.error)),
             ),
           ],
         ),
       ),
-    );
+    ).then((confirmed) {
+      if (confirmed == true) onDelete();
+    });
   }
 }
 
@@ -516,23 +587,28 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              // Header
+              // Header — title right, X left
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                child: Row(
+                child: Stack(
+                  alignment: Alignment.center,
                   children: [
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: const Icon(Icons.close_rounded,
-                          color: Color(0xFF373D41), size: 22),
-                    ),
-                    const Spacer(),
+                    // Title centered
                     Text(
                       'التعليقات',
                       style: AppTextStyles.body.copyWith(
                         color: const Color(0xFF495055),
                         fontWeight: FontWeight.w700,
                         fontSize: 18,
+                      ),
+                    ),
+                    // X — pinned to left
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: const Icon(Icons.close_rounded,
+                            color: Color(0xFF373D41), size: 22),
                       ),
                     ),
                   ],
@@ -578,66 +654,38 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                                 const Divider(height: 1),
                             itemBuilder: (_, i) {
                               final c = _comments[i];
-                              final isOwner =
-                                  c.author?.id == widget.currentUserId;
+                              final isOwner = c.author?.id == widget.currentUserId;
                               return Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 10),
+                                padding: const EdgeInsets.symmetric(vertical: 10),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    // ── FAR RIGHT: avatar + name + text ──
+                                    _Avatar(
+                                      photoUrl: c.author?.profilePicture,
+                                      initials: c.author?.initials ?? '؟',
+                                      size: 34,
+                                      fontSize: 13,
+                                    ),
+                                    const SizedBox(width: 8),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.end,
-                                            children: [
-                                              if (isOwner)
-                                                GestureDetector(
-                                                  onTap: () =>
-                                                      _deleteComment(c),
-                                                  child: const Padding(
-                                                    padding: EdgeInsets.only(
-                                                        left: 4),
-                                                    child: Icon(
-                                                        Icons
-                                                            .delete_outline_rounded,
-                                                        color:
-                                                            Color(0xFFADB5BB),
-                                                        size: 16),
-                                                  ),
-                                                ),
-                                              Text(
-                                                _formatDate(c.createdAt),
-                                                style:
-                                                    AppTextStyles.small.copyWith(
-                                                  color:
-                                                      const Color(0xFFADB5BB),
-                                                  fontSize: 11,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Text(
-                                                c.author?.fullName ?? 'مستخدم',
-                                                style:
-                                                    AppTextStyles.body.copyWith(
-                                                  color:
-                                                      const Color(0xFF373D41),
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                            ],
+                                          Text(
+                                            c.author?.fullName ?? 'مستخدم',
+                                            style: AppTextStyles.body.copyWith(
+                                              color: const Color(0xFF373D41),
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14,
+                                            ),
                                           ),
-                                          const SizedBox(height: 4),
+                                          const SizedBox(height: 3),
                                           Text(
                                             c.content,
                                             textAlign: TextAlign.right,
-                                            style:
-                                                AppTextStyles.small.copyWith(
+                                            textDirection: TextDirection.rtl,
+                                            style: AppTextStyles.small.copyWith(
                                               color: const Color(0xFF868687),
                                               fontSize: 13,
                                               height: 1.5,
@@ -646,25 +694,31 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                                         ],
                                       ),
                                     ),
-                                    const SizedBox(width: 10),
-                                    Container(
-                                      width: 34,
-                                      height: 34,
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFFEF865F),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          c.author?.initials ?? '؟',
-                                          style: const TextStyle(
-                                            fontFamily: 'Rubik',
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w700,
-                                            color: Colors.white,
+                                    // ── FAR LEFT: date + delete ──
+                                    const SizedBox(width: 8),
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          _formatDate(c.createdAt),
+                                          style: AppTextStyles.small.copyWith(
+                                            color: const Color(0xFFADB5BB),
+                                            fontSize: 11,
                                           ),
                                         ),
-                                      ),
+                                        if (isOwner)
+                                          GestureDetector(
+                                            onTap: () => _deleteComment(c),
+                                            child: const Padding(
+                                              padding: EdgeInsets.only(top: 4),
+                                              child: Icon(
+                                                Icons.delete_outline_rounded,
+                                                color: Color(0xFFADB5BB),
+                                                size: 16,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -672,18 +726,19 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                             },
                           ),
               ),
-              // Comment input
+              // Comment input — send button far left, field starts from right
               const Divider(height: 1),
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 10, 12, 16),
                 child: Row(
+                  textDirection: TextDirection.ltr,
                   children: [
-                    // Send button
+                    // Send button — far left
                     GestureDetector(
                       onTap: _submit,
                       child: Container(
-                        width: 40,
-                        height: 40,
+                        width: 42,
+                        height: 42,
                         decoration: BoxDecoration(
                           color: AppColors.primary,
                           borderRadius: BorderRadius.circular(12),
@@ -698,7 +753,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    // Text field
+                    // Text field — fills remaining space, text starts from right
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(
@@ -713,7 +768,7 @@ class _CommentsSheetState extends State<_CommentsSheet> {
                           minLines: 1,
                           style: AppTextStyles.body.copyWith(fontSize: 14),
                           decoration: InputDecoration(
-                            hintText: 'اكتب تعليقًا...',
+                            hintText: 'اكتب تعليقاً...',
                             hintTextDirection: TextDirection.rtl,
                             hintStyle: AppTextStyles.body.copyWith(
                               color: AppColors.textHint,

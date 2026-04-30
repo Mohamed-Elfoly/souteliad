@@ -37,8 +37,9 @@ class LessonModel {
     }
     // Fix localhost for Android emulator
     resolved = resolved
-        .replaceAll('http://localhost:', 'http://10.0.2.2:')
-        .replaceAll('http://127.0.0.1:', 'http://10.0.2.2:');
+        .replaceAll('http://localhost:', 'http://192.168.1.6:')
+        .replaceAll('http://127.0.0.1:', 'http://192.168.1.6:')
+        .replaceAll('http://10.0.2.2:', 'http://192.168.1.6:');
     return resolved;
   }
 

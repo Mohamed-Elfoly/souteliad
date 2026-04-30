@@ -2,7 +2,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // api_client removed — support screen moved to its own file
-import '../../providers/notifications_provider.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/auth/presentation/screens/onboarding_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -133,10 +132,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const CommunityScreen(),
           ),
           GoRoute(
-            path: AppRoutes.notifications,
-            builder: (context, state) => const NotificationsScreen(),
-          ),
-          GoRoute(
             path: AppRoutes.profile,
             builder: (context, state) => const ProfileScreen(),
           ),
@@ -196,6 +191,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.chatAssistant,
         builder: (context, state) => const ChatScreen(),
       ),
+      // ── Notifications (outside ShellRoute = no bottom nav) ────────
+      GoRoute(
+        path: AppRoutes.notifications,
+        builder: (context, state) => const NotificationsScreen(),
+      ),
       // ── Profile sub-pages (outside ShellRoute = no bottom nav) ─────
       GoRoute(
         path: AppRoutes.editProfile,
@@ -235,48 +235,37 @@ class MainShell extends ConsumerStatefulWidget {
 }
 
 class _MainShellState extends ConsumerState<MainShell> {
-  int _currentIndex = 0;
-
   final _tabs = [
     AppRoutes.home,
     AppRoutes.explore,
     AppRoutes.community,
-    AppRoutes.notifications,
     AppRoutes.profile,
   ];
 
+  int _indexFromLocation(String location) {
+    for (var i = 0; i < _tabs.length; i++) {
+      if (location.startsWith(_tabs[i])) return i;
+    }
+    return 0;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final unreadAsync = ref.watch(unreadCountProvider);
-    final unreadCount = unreadAsync.valueOrNull ?? 0;
+    final location = GoRouterState.of(context).matchedLocation;
+    final currentIndex = _indexFromLocation(location);
 
     return Scaffold(
       body: widget.child,
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
+        currentIndex: currentIndex,
         onTap: (index) {
-          setState(() => _currentIndex = index);
-          if (index == 3) ref.invalidate(unreadCountProvider);
           context.go(_tabs[index]);
         },
-        items: [
-          const BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'الرئيسية'),
-          const BottomNavigationBarItem(icon: Icon(Icons.menu_book_outlined), activeIcon: Icon(Icons.menu_book), label: 'الدروس'),
-          const BottomNavigationBarItem(icon: Icon(Icons.forum_outlined), activeIcon: Icon(Icons.forum), label: 'المجتمع'),
-          BottomNavigationBarItem(
-            icon: Badge(
-              isLabelVisible: unreadCount > 0,
-              label: Text('$unreadCount'),
-              child: const Icon(Icons.notifications_outlined),
-            ),
-            activeIcon: Badge(
-              isLabelVisible: unreadCount > 0,
-              label: Text('$unreadCount'),
-              child: const Icon(Icons.notifications),
-            ),
-            label: 'الإشعارات',
-          ),
-          const BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'حسابي'),
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'الرئيسية'),
+          BottomNavigationBarItem(icon: Icon(Icons.menu_book_outlined), activeIcon: Icon(Icons.menu_book), label: 'الدروس'),
+          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline_rounded), activeIcon: Icon(Icons.chat_bubble_rounded), label: 'المجتمع'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'حسابي'),
         ],
       ),
     );

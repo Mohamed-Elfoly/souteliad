@@ -35,6 +35,7 @@ class PostModel {
   final DateTime createdAt;
   final int likesCount;
   final int commentsCount;
+  final bool isLiked;
 
   const PostModel({
     required this.id,
@@ -44,9 +45,10 @@ class PostModel {
     required this.createdAt,
     this.likesCount = 0,
     this.commentsCount = 0,
+    this.isLiked = false,
   });
 
-  factory PostModel.fromJson(Map<String, dynamic> json) {
+  factory PostModel.fromJson(Map<String, dynamic> json, {String? currentUserId}) {
     final rawUser = json['userId'];
     PostAuthor? author;
     if (rawUser is Map<String, dynamic>) {
@@ -55,12 +57,17 @@ class PostModel {
 
     final rawLikes = json['likes'];
     final int likesCount;
+    final bool isLiked;
     if (rawLikes is List) {
       likesCount = rawLikes.length;
+      isLiked = currentUserId != null &&
+          rawLikes.any((id) => id.toString() == currentUserId);
     } else if (rawLikes is int) {
       likesCount = rawLikes;
+      isLiked = false;
     } else {
       likesCount = 0;
+      isLiked = false;
     }
 
     final rawComments = json['comments'];
@@ -83,6 +90,7 @@ class PostModel {
           : DateTime.now(),
       likesCount: likesCount,
       commentsCount: commentsCount,
+      isLiked: isLiked,
     );
   }
 }

@@ -89,7 +89,7 @@ class _LessonContent extends ConsumerWidget {
               // Spacer to balance
               const SizedBox(width: 40),
               Text(
-                'اكتشاف',
+                'الدروس',
                 style: AppTextStyles.h3.copyWith(
                   color: const Color(0xFF373D41),
                   fontWeight: FontWeight.w700,
@@ -211,25 +211,33 @@ class _LessonContent extends ConsumerWidget {
 
           const SizedBox(height: 24),
 
-          Text(
-            'نبذة عن الدرس:',
-            textAlign: TextAlign.right,
-            style: AppTextStyles.h2.copyWith(
-              color: const Color(0xFF373D41),
-              fontWeight: FontWeight.w700,
-              fontSize: 24,
+          const Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              'نبذة عن الدرس:',
+              textDirection: TextDirection.rtl,
+              style: TextStyle(
+                fontFamily: 'Rubik',
+                color: Color(0xFF373D41),
+                fontWeight: FontWeight.w700,
+                fontSize: 24,
+              ),
             ),
           ),
           const SizedBox(height: 8),
           if (lesson.description != null && lesson.description!.isNotEmpty)
-            Text(
+            SizedBox(
+              width: double.infinity,
+              child: Text(
               lesson.description!,
               textAlign: TextAlign.right,
+              textDirection: TextDirection.rtl,
               style: AppTextStyles.small.copyWith(
                 color: const Color(0xFF868687),
                 fontSize: 14,
                 height: 2.0,
               ),
+            ),
             ),
 
           const SizedBox(height: 24),
@@ -268,6 +276,12 @@ class _LessonContent extends ConsumerWidget {
           ),
 
           const SizedBox(height: 20),
+
+          _RatingSection(
+            lessonId: lesson.id,
+            avgRating: lesson.avgRating,
+            numRatings: lesson.numRatings,
+          ),
 
           // Primary CTA: watch video
           SizedBox(
@@ -435,6 +449,160 @@ class _FeatureRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ── Rating section ────────────────────────────────────────────────────────────
+
+class _RatingSection extends ConsumerStatefulWidget {
+  final String lessonId;
+  final double avgRating;
+  final int numRatings;
+  const _RatingSection({
+    required this.lessonId,
+    required this.avgRating,
+    required this.numRatings,
+  });
+
+  @override
+  ConsumerState<_RatingSection> createState() => _RatingSectionState();
+}
+
+class _RatingSectionState extends ConsumerState<_RatingSection> {
+  int? _myRating;
+  bool _loading = true;
+  bool _submitting = false;
+  int _hovered = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final r = await levelsService.getMyRating(widget.lessonId);
+    if (mounted) setState(() { _myRating = r; _loading = false; });
+  }
+
+  Future<void> _submit(int rating) async {
+    if (_myRating != null) return;
+    setState(() { _myRating = rating; _submitting = true; });
+    try {
+      await levelsService.submitRating(widget.lessonId, rating);
+    } catch (_) {
+      // keep optimistic value shown
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted) ref.invalidate(_lessonDetailProvider(widget.lessonId));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final displayed = _hovered > 0 ? _hovered : (_myRating ?? 0);
+    final hasRated = _myRating != null;
+
+    // read live values from provider so they update after rating
+    final lessonAsync = ref.watch(_lessonDetailProvider(widget.lessonId));
+    final avgRating = lessonAsync.valueOrNull?.avgRating ?? widget.avgRating;
+    final numRatings = lessonAsync.valueOrNull?.numRatings ?? widget.numRatings;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        const Divider(height: 1, color: Color(0xFFF0F0F0)),
+        const SizedBox(height: 20),
+
+        // Section title
+        Row(
+          textDirection: TextDirection.rtl,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // avg stats on left
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.star_rounded, color: Color(0xFFFFB800), size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  avgRating.toStringAsFixed(1),
+                  style: const TextStyle(
+                    fontFamily: 'Rubik',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF373D41),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '($numRatings)',
+                  style: const TextStyle(
+                    fontFamily: 'Rubik',
+                    fontSize: 12,
+                    color: Color(0xFF868687),
+                  ),
+                ),
+              ],
+            ),
+            // title on right
+            const Text(
+              'قيّم هذا الدرس',
+              style: TextStyle(
+                fontFamily: 'Rubik',
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF373D41),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 16),
+
+        // Stars row — centered
+        Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(5, (i) {
+                final star = i + 1;
+                final filled = star <= displayed;
+                return GestureDetector(
+                  onTap: _submitting ? null : () => _submit(star),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    child: Icon(
+                      filled ? Icons.star_rounded : Icons.star_outline_rounded,
+                      color: filled ? const Color(0xFFFFB800) : const Color(0xFFCCCCCC),
+                      size: 40,
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+
+        const SizedBox(height: 10),
+
+        // Status text
+        Center(
+          child: Text(
+            hasRated
+                ? 'شكرًا! قيّمت هذا الدرس بـ $_myRating من 5'
+                : 'اضغط على النجوم لتقييم الدرس',
+            style: TextStyle(
+              fontFamily: 'Rubik',
+              fontSize: 13,
+              color: hasRated ? const Color(0xFF4CAF50) : const Color(0xFF868687),
+              fontWeight: hasRated ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 8),
+      ],
     );
   }
 }

@@ -53,6 +53,25 @@ class LevelsService {
     }
   }
 
+  Future<int?> getMyRating(String lessonId) async {
+    try {
+      final res = await _dio.get('/lessons/$lessonId/ratings/me');
+      final raw = res.data['data']['data'];
+      if (raw == null) return null;
+      return (raw as num).toInt();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> submitRating(String lessonId, int rating) async {
+    try {
+      await _dio.post('/lessons/$lessonId/ratings', data: {'rating': rating});
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
   Future<void> markLessonComplete(String lessonId) async {
     try {
       await _dio.post('/progress', data: {'lessonId': lessonId});

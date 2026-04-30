@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../providers/stats_provider.dart';
@@ -27,8 +28,14 @@ class LessonPlayerScreen extends ConsumerStatefulWidget {
 }
 
 class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> {
-  late VideoPlayerController _videoController;
+  // YouTube
+  YoutubePlayerController? _ytController;
+  bool _isYoutube = false;
+
+  // Direct video
+  VideoPlayerController? _videoController;
   ChewieController? _chewieController;
+
   bool _hasError = false;
   bool _isInitialized = false;
   bool _markedComplete = false;
@@ -44,51 +51,68 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> {
     _initPlayer();
   }
 
+  String? _extractYoutubeId(String url) {
+    return YoutubePlayer.convertUrlToId(url);
+  }
+
   Future<void> _initPlayer() async {
-    try {
-      _videoController = VideoPlayerController.networkUrl(
-        Uri.parse(widget.videoUrl),
-      );
-      await _videoController.initialize();
-      _videoController.addListener(_onVideoProgress);
-      _chewieController = ChewieController(
-        videoPlayerController: _videoController,
-        autoPlay: true,
-        looping: false,
-        allowFullScreen: true,
-        allowMuting: true,
-        showControls: true,
-        materialProgressColors: ChewieProgressColors(
-          playedColor: AppColors.primary,
-          handleColor: AppColors.primary,
-          backgroundColor: const Color(0xFFDDDEDF),
-          bufferedColor: const Color(0xFFFFCCAA),
-        ),
-        placeholder: Container(color: Colors.black),
-        errorBuilder: (context, errorMessage) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.error_outline, color: Colors.white, size: 48),
-              const SizedBox(height: 12),
-              Text(
-                'تعذّر تشغيل الفيديو',
-                style: AppTextStyles.body.copyWith(color: Colors.white),
-              ),
-            ],
-          ),
+    final url = widget.videoUrl;
+    final ytId = _extractYoutubeId(url);
+
+    if (ytId != null) {
+      // YouTube video
+      _isYoutube = true;
+      _ytController = YoutubePlayerController(
+        initialVideoId: ytId,
+        flags: const YoutubePlayerFlags(
+          autoPlay: true,
+          mute: false,
+          enableCaption: false,
         ),
       );
+      _ytController!.addListener(_onYoutubeProgress);
       setState(() => _isInitialized = true);
-    } catch (_) {
-      setState(() => _hasError = true);
+    } else {
+      // Direct video file
+      _isYoutube = false;
+      try {
+        _videoController = VideoPlayerController.networkUrl(Uri.parse(url));
+        await _videoController!.initialize();
+        _videoController!.addListener(_onVideoProgress);
+        _chewieController = ChewieController(
+          videoPlayerController: _videoController!,
+          autoPlay: true,
+          looping: false,
+          allowFullScreen: true,
+          allowMuting: true,
+          showControls: true,
+          materialProgressColors: ChewieProgressColors(
+            playedColor: AppColors.primary,
+            handleColor: AppColors.primary,
+            backgroundColor: const Color(0xFFDDDEDF),
+            bufferedColor: const Color(0xFFFFCCAA),
+          ),
+          placeholder: Container(color: Colors.black),
+        );
+        setState(() => _isInitialized = true);
+      } catch (_) {
+        setState(() => _hasError = true);
+      }
+    }
+  }
+
+  void _onYoutubeProgress() {
+    if (_markedComplete) return;
+    final value = _ytController!.value;
+    if (value.playerState == PlayerState.ended) {
+      _markComplete();
     }
   }
 
   void _onVideoProgress() {
     if (_markedComplete) return;
-    final pos = _videoController.value.position;
-    final dur = _videoController.value.duration;
+    final pos = _videoController!.value.position;
+    final dur = _videoController!.value.duration;
     if (dur.inSeconds > 0 && pos.inSeconds >= dur.inSeconds - 2) {
       _markComplete();
     }
@@ -102,6 +126,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> {
       if (mounted) {
         ref.invalidate(studentStatsProvider);
         ref.invalidate(levelsProvider);
+        setState(() {});
       }
     } catch (_) {
       _markedComplete = false;
@@ -111,14 +136,36 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> {
   @override
   void dispose() {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-    _videoController.removeListener(_onVideoProgress);
-    _videoController.dispose();
+    _ytController?.removeListener(_onYoutubeProgress);
+    _ytController?.dispose();
+    _videoController?.removeListener(_onVideoProgress);
+    _videoController?.dispose();
     _chewieController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // Wrap with YoutubePlayerBuilder only if YouTube
+    if (_isYoutube && _ytController != null) {
+      return YoutubePlayerBuilder(
+        player: YoutubePlayer(
+          controller: _ytController!,
+          showVideoProgressIndicator: true,
+          progressIndicatorColor: AppColors.primary,
+          progressColors: const ProgressBarColors(
+            playedColor: AppColors.primary,
+            handleColor: AppColors.primary,
+          ),
+        ),
+        builder: (context, player) => _buildScaffold(context, player),
+      );
+    }
+
+    return _buildScaffold(context, null);
+  }
+
+  Widget _buildScaffold(BuildContext context, Widget? ytPlayer) {
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
@@ -127,7 +174,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> {
             _buildHeader(context),
             AspectRatio(
               aspectRatio: 16 / 9,
-              child: _buildPlayerArea(),
+              child: ytPlayer ?? _buildPlayerArea(),
             ),
             Expanded(
               child: Container(
@@ -150,37 +197,23 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          if (_markedComplete)
-                            Text(
-                              'تم إكمال الدرس',
-                              style: AppTextStyles.small.copyWith(
-                                color: Colors.green,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            )
-                          else
-                            Text(
-                              'جارٍ تشغيل الدرس',
-                              style: AppTextStyles.small.copyWith(
-                                color: AppColors.textSecondary,
-                                fontSize: 13,
-                              ),
+                          Text(
+                            _markedComplete ? 'تم إكمال الدرس' : 'جارٍ تشغيل الدرس',
+                            style: AppTextStyles.small.copyWith(
+                              color: _markedComplete ? Colors.green : AppColors.textSecondary,
+                              fontSize: 13,
+                              fontWeight: _markedComplete ? FontWeight.w600 : FontWeight.normal,
                             ),
+                          ),
                           const SizedBox(width: 8),
                           Icon(
-                            _markedComplete
-                                ? Icons.check_circle_outline
-                                : Icons.play_circle_outline,
-                            color: _markedComplete
-                                ? Colors.green
-                                : AppColors.primary,
+                            _markedComplete ? Icons.check_circle_outline : Icons.play_circle_outline,
+                            color: _markedComplete ? Colors.green : AppColors.primary,
                             size: 20,
                           ),
                         ],
                       ),
                     const Spacer(),
-                    // Mark complete manually if not done automatically
                     if (!_markedComplete)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 12),
@@ -278,13 +311,10 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.wifi_off_outlined,
-                  color: Colors.white54, size: 48),
+              const Icon(Icons.wifi_off_outlined, color: Colors.white54, size: 48),
               const SizedBox(height: 12),
-              Text(
-                'تعذّر تشغيل الفيديو',
-                style: AppTextStyles.body.copyWith(color: Colors.white70),
-              ),
+              Text('تعذّر تشغيل الفيديو',
+                  style: AppTextStyles.body.copyWith(color: Colors.white70)),
               const SizedBox(height: 16),
               TextButton(
                 onPressed: () {
@@ -295,10 +325,8 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> {
                   });
                   _initPlayer();
                 },
-                child: const Text(
-                  'إعادة المحاولة',
-                  style: TextStyle(color: AppColors.primary),
-                ),
+                child: const Text('إعادة المحاولة',
+                    style: TextStyle(color: AppColors.primary)),
               ),
             ],
           ),
@@ -310,10 +338,7 @@ class _LessonPlayerScreenState extends ConsumerState<LessonPlayerScreen> {
       return Container(
         color: Colors.black,
         child: const Center(
-          child: CircularProgressIndicator(
-            color: AppColors.primary,
-            strokeWidth: 2,
-          ),
+          child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2),
         ),
       );
     }

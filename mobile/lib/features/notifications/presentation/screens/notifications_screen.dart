@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_routes.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../models/notification_model.dart';
 import '../../data/notifications_service.dart';
@@ -80,22 +82,30 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'الإشعارات',
-                  style: AppTextStyles.h3.copyWith(
-                    color: const Color(0xFF373D41),
-                    fontWeight: FontWeight.w700,
-                    fontSize: 20,
-                  ),
+            // Back button → home
+            GestureDetector(
+              onTap: () => context.go(AppRoutes.home),
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F5F5),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                const SizedBox(width: 8),
-                const Icon(Icons.arrow_forward_ios_rounded,
-                    color: AppColors.primary, size: 18),
-              ],
+                child: const Icon(Icons.arrow_back_ios_new_rounded,
+                    size: 18, color: Color(0xFF373D41)),
+              ),
             ),
+            // Title
+            Text(
+              'الإشعارات',
+              style: AppTextStyles.h3.copyWith(
+                color: const Color(0xFF373D41),
+                fontWeight: FontWeight.w700,
+                fontSize: 20,
+              ),
+            ),
+            // Mark all read — or spacer to keep title centered
             if (unread.isNotEmpty)
               GestureDetector(
                 onTap: () async {
@@ -129,7 +139,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     ],
                   ),
                 ),
-              ),
+              )
+            else
+              const SizedBox(width: 38),
           ],
         ),
       ),
@@ -421,91 +433,115 @@ class _NotificationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _typeColor;
-    final bgColor = notification.read
-        ? const Color(0xFFF9F9F9)
-        : color.withOpacity(0.07);
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(12),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
           border: notification.read
-              ? Border.all(color: const Color(0xFFEEEEEE))
-              : Border.all(color: color.withOpacity(0.3), width: 1.5),
+              ? null
+              : Border(
+                  right: BorderSide(color: color, width: 4),
+                ),
         ),
         child: Directionality(
           textDirection: TextDirection.rtl,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Icon box
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(_typeIcon, color: color, size: 24),
                 ),
-                child: Icon(_typeIcon, color: color, size: 22),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _formatTime(),
-                          style: TextStyle(
-                            fontFamily: 'Rubik',
-                            fontSize: 11,
-                            color: Colors.grey[500],
+                const SizedBox(width: 12),
+                // Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Title row: badge + time
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Time
+                          Text(
+                            _formatTime(),
+                            style: TextStyle(
+                              fontFamily: 'Rubik',
+                              fontSize: 11,
+                              color: Colors.grey[400],
+                            ),
                           ),
-                        ),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (!notification.read)
+                          // Type badge
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (!notification.read)
+                                Container(
+                                  width: 7,
+                                  height: 7,
+                                  margin: const EdgeInsets.only(left: 6),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: color,
+                                  ),
+                                ),
                               Container(
-                                width: 8,
-                                height: 8,
-                                margin: const EdgeInsets.only(left: 6),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: color,
+                                  color: color.withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  _typeTitle,
+                                  style: TextStyle(
+                                    fontFamily: 'Rubik',
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: color,
+                                  ),
                                 ),
                               ),
-                            Text(
-                              _typeTitle,
-                              style: AppTextStyles.body.copyWith(
-                                color: const Color(0xFF373D41),
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      notification.message,
-                      textAlign: TextAlign.right,
-                      style: AppTextStyles.small.copyWith(
-                        color: const Color(0xFF666667),
-                        fontSize: 13,
-                        height: 1.5,
+                            ],
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 7),
+                      // Message
+                      Text(
+                        notification.message,
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(
+                          fontFamily: 'Rubik',
+                          fontSize: 13,
+                          color: Color(0xFF4A4A4A),
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

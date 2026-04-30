@@ -76,18 +76,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               children: [
                 Image.asset(
                   'assets/images/logo1.png',
-                  width: 160,
+                  width: MediaQuery.of(context).size.width * 0.55,
                   fit: BoxFit.contain,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 const Text(
                   'صوت اليد',
                   style: TextStyle(
                     fontFamily: 'Rubik',
-                    fontSize: 36,
+                    fontSize: 48,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF1A1F71),
-                    letterSpacing: 0.5,
+                    letterSpacing: 1,
                   ),
                 ),
               ],
