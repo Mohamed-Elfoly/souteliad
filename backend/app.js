@@ -38,7 +38,19 @@ const app = express();
 app.use(helmet());
 
 // Implement CORS
-app.use(cors({ origin: process.env.CORS_ORIGIN }));
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+  : [];
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow Postman and server-to-server calls (no origin)
+      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+      callback(new Error(`CORS: ${origin} not allowed`));
+    },
+    credentials: true,
+  })
+);
 app.options('*', cors());
 
 // Serving static files
