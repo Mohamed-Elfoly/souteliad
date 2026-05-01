@@ -94,35 +94,34 @@ class _ChatScreenState extends State<ChatScreen> {
   // ── Header ───────────────────────────────────────────────────────────────
 
   Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      child: Row(
-        children: [
-          // Hamburger / back — LTR left
-          GestureDetector(
-            onTap: () => context.pop(),
-            child: const Icon(Icons.menu_rounded,
-                color: AppColors.primary, size: 24),
-          ),
-          // Title center
-          Expanded(
-            child: Text(
-              'صوت اليد',
-              textAlign: TextAlign.center,
-              style: AppTextStyles.h3.copyWith(
-                color: const Color(0xFF373D41),
-                fontWeight: FontWeight.w500,
-                fontSize: 20,
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        child: Row(
+          children: [
+            // Menu — far left
+            const Icon(Icons.menu_rounded, color: AppColors.primary, size: 24),
+            // Title center
+            Expanded(
+              child: Text(
+                'صوت اليد',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.h3.copyWith(
+                  color: const Color(0xFF373D41),
+                  fontWeight: FontWeight.w500,
+                  fontSize: 20,
+                ),
               ),
             ),
-          ),
-          // Back arrow — LTR right
-          GestureDetector(
-            onTap: () => context.pop(),
-            child: const Icon(Icons.arrow_forward_ios_rounded,
-                color: AppColors.primary, size: 18),
-          ),
-        ],
+            // Back arrow — far right
+            GestureDetector(
+              onTap: () => context.pop(),
+              child: const Icon(Icons.arrow_forward_ios_rounded,
+                  color: AppColors.primary, size: 18),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -430,19 +429,22 @@ class _IntroItem extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Text(
-              title,
-              style: AppTextStyles.h3.copyWith(
-                fontWeight: FontWeight.w600,
-                fontSize: 18,
+        Align(
+          alignment: Alignment.centerRight,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 22, color: AppColors.textPrimary),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: AppTextStyles.h3.copyWith(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Icon(icon, size: 24, color: AppColors.textPrimary),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: 8),
         Text(

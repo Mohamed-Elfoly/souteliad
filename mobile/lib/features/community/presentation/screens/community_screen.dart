@@ -860,23 +860,15 @@ class _NewPostSheetState extends State<_NewPostSheet> {
               padding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               child: Row(
+                textDirection: TextDirection.ltr,
                 children: [
-                  _posting
-                      ? const SizedBox(
-                          width: 32,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: AppColors.primary))
-                      : GestureDetector(
-                          onTap: _submit,
-                          child: Text(
-                            'نشر',
-                            style: AppTextStyles.body.copyWith(
-                              color: const Color(0xFF84919A),
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
+                  // X — far left
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: const Icon(Icons.close_rounded,
+                        color: Color(0xFF373D41), size: 24),
+                  ),
+                  // Title — center
                   Expanded(
                     child: Text(
                       'منشور جديد في المجتمع',
@@ -888,11 +880,32 @@ class _NewPostSheetState extends State<_NewPostSheet> {
                       ),
                     ),
                   ),
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.close_rounded,
-                        color: Color(0xFF373D41), size: 24),
-                  ),
+                  // Publish button — far right
+                  if (_posting)
+                    const SizedBox(
+                        width: 24, height: 24,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: AppColors.primary))
+                  else
+                    GestureDetector(
+                      onTap: _submit,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          'نشر',
+                          style: TextStyle(
+                            fontFamily: 'Rubik',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
