@@ -29,6 +29,7 @@ const aiPracticeRouter = require('./routes/aiPracticeRoutes');
 const statsRouter = require('./routes/statsRoutes');
 const supportTicketRouter = require('./routes/supportTicketRoutes');
 const ratingRouter = require('./routes/ratingRoutes');
+const chatRouter = require('./routes/chatRoutes');
 
 const app = express();
 
@@ -105,6 +106,7 @@ app.use('/api/v1/ai-practice', aiPracticeRouter);
 app.use('/api/v1/stats', statsRouter);
 app.use('/api/v1/support', supportTicketRouter);
 app.use('/api/v1/ratings', ratingRouter);
+app.use('/api/v1/chat', chatRouter);
 
 // Health check route
 app.get('/api/v1/health', (req, res) => {
