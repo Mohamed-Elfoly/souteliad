@@ -8,6 +8,10 @@ const router = express.Router();
 router.get('/public', statsController.getPublicStats);
 
 router.use(authController.protect);
+
+// Student — GET /api/v1/stats/student
+router.get('/student', statsController.getMyStats);
+
 router.use(authController.restrictTo('admin', 'teacher'));
 
 router.get('/students', statsController.getStudentStats);
