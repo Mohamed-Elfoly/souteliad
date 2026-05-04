@@ -1044,7 +1044,7 @@ export default function Navbar() {
     <>
       <header
         className="
-          w-full min-w-0 overflow-x-hidden
+          w-full min-w-0
           sticky top-0 z-40
           flex items-center justify-between
           bg-white border-b border-gray-200
