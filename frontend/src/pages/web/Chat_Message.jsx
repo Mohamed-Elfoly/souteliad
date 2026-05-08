@@ -2,33 +2,51 @@ import "../../styles/chats.css";
 import { Search, Send, Plus, Image, MessageCircle, Trash2, X } from "lucide-react";
 import hello from "../../assets/images/hello2.png";
 import React, { useState, useRef, useEffect } from "react";
-import { sendMessage, getChatHistory, clearChatHistory } from "../../api/chatApi";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  sendMessage,
+  getChatHistory,
+  clearChatHistory,
+  getConversations,
+  createConversation,
+  deleteConversation,
+} from "../../api/chatApi";
 
 export default function Chat_Message() {
+  const { conversationId } = useParams();
+  const navigate = useNavigate();
+
   const [showOptions, setShowOptions] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(true);
-  const [selectedImage, setSelectedImage] = useState(null); // File object
-  const [imagePreview, setImagePreview] = useState(null);   // Object URL
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+
+  const [conversations, setConversations] = useState([]);
+  const [search, setSearch] = useState("");
 
   const imageInputRef = useRef(null);
   const messagesEndRef = useRef(null);
 
+  // Load sidebar conversations
   useEffect(() => {
-    const loadHistory = async () => {
-      try {
-        const history = await getChatHistory();
-        setMessages(history);
-      } catch {
-        // no history yet
-      } finally {
-        setLoadingHistory(false);
-      }
-    };
-    loadHistory();
+    getConversations()
+      .then(setConversations)
+      .catch(() => {});
   }, []);
+
+  // Load messages for current conversation
+  useEffect(() => {
+    if (!conversationId) return;
+    setLoadingHistory(true);
+    setMessages([]);
+    getChatHistory(conversationId)
+      .then(setMessages)
+      .catch(() => {})
+      .finally(() => setLoadingHistory(false));
+  }, [conversationId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -40,7 +58,6 @@ export default function Chat_Message() {
     setSelectedImage(file);
     setImagePreview(URL.createObjectURL(file));
     setShowOptions(false);
-    // reset input so same file can be re-selected
     e.target.value = "";
   };
 
@@ -62,7 +79,6 @@ export default function Chat_Message() {
     setImagePreview(null);
     setLoading(true);
 
-    // Optimistically add user message
     setMessages((prev) => [
       ...prev,
       {
@@ -74,11 +90,13 @@ export default function Chat_Message() {
     ]);
 
     try {
-      const data = await sendMessage(userText, imageFile);
+      const data = await sendMessage(conversationId, userText, imageFile);
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: data.message, _id: data.messageId },
       ]);
+      // Refresh sidebar to update title/lastMessage
+      getConversations().then(setConversations).catch(() => {});
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -95,8 +113,33 @@ export default function Chat_Message() {
 
   const handleClear = async () => {
     try {
-      await clearChatHistory();
+      await clearChatHistory(conversationId);
       setMessages([]);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleNewConversation = async () => {
+    try {
+      const conv = await createConversation();
+      setConversations((prev) => [conv, ...prev]);
+      navigate(`/Chat_Message/${conv._id}`);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleOpenConversation = (id) => {
+    if (id !== conversationId) navigate(`/Chat_Message/${id}`);
+  };
+
+  const handleDeleteConversation = async (e, id) => {
+    e.stopPropagation();
+    try {
+      await deleteConversation(id);
+      setConversations((prev) => prev.filter((c) => c._id !== id));
+      if (id === conversationId) navigate("/Chats");
     } catch {
       // ignore
     }
@@ -104,18 +147,23 @@ export default function Chat_Message() {
 
   const resolveImageSrc = (imageUrl) => {
     if (!imageUrl) return null;
-    // Optimistic preview uses object URL
     if (imageUrl.startsWith("__preview__")) return imageUrl.replace("__preview__", "");
-    // Saved image from server
     return imageUrl;
   };
+
+  const filtered = conversations.filter((c) =>
+    c.title.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const currentTitle =
+    conversations.find((c) => c._id === conversationId)?.title || "صوت اليد";
 
   return (
     <div className="chat-layout">
       <div className="voice-container">
         <div className="voice-card">
           <div className="voice-card-header">
-            <h1 className="title">صوت اليد</h1>
+            <h1 className="title">{currentTitle}</h1>
             {messages.length > 0 && (
               <button className="clear-btn" onClick={handleClear} title="مسح المحادثة">
                 <Trash2 size={16} />
@@ -150,11 +198,7 @@ export default function Chat_Message() {
                     className={`chat-bubble ${msg.role === "user" ? "chat-bubble-user" : "chat-bubble-ai"}`}
                   >
                     {imgSrc && (
-                      <img
-                        src={imgSrc}
-                        alt="صورة مرسلة"
-                        className="chat-bubble-image"
-                      />
+                      <img src={imgSrc} alt="صورة مرسلة" className="chat-bubble-image" />
                     )}
                     {msg.content && <p>{msg.content}</p>}
                   </div>
@@ -171,7 +215,6 @@ export default function Chat_Message() {
             </div>
           )}
 
-          {/* Image preview strip above input */}
           {imagePreview && (
             <div className="chat-image-preview">
               <img src={imagePreview} alt="معاينة" />
@@ -183,10 +226,7 @@ export default function Chat_Message() {
 
           <div className="chat-input">
             <div className="plus-wrapper">
-              <button
-                className="plus-btn"
-                onClick={() => setShowOptions(!showOptions)}
-              >
+              <button className="plus-btn" onClick={() => setShowOptions(!showOptions)}>
                 <Plus size={20} />
               </button>
               {showOptions && (
@@ -224,14 +264,51 @@ export default function Chat_Message() {
       </div>
 
       <aside className="chat-sidebar">
+        <div className="chat-sidebar-header">
+          <span className="chat-sidebar-title">المحادثات</span>
+          <button className="chat-new-btn" onClick={handleNewConversation} title="محادثة جديدة">
+            <Plus size={16} />
+          </button>
+        </div>
+
         <div className="chat-search-box">
-          <input type="text" placeholder="البحث" />
           <Search size={18} className="chat-search-icon" />
+          <input
+            type="text"
+            placeholder="البحث"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
-        <div className="chat-item">
-          <MessageCircle size={18} />
-          <span className="chat-msg-sender">صوت اليد</span>
-        </div>
+
+        {filtered.length === 0 ? (
+          <p className="chat-sidebar-empty">لا توجد محادثات</p>
+        ) : (
+          <div className="chat-conv-list">
+            {filtered.map((conv) => (
+              <div
+                key={conv._id}
+                className={`chat-conv-item ${conv._id === conversationId ? "chat-conv-active" : ""}`}
+                onClick={() => handleOpenConversation(conv._id)}
+              >
+                <MessageCircle size={16} className="chat-conv-icon" />
+                <div className="chat-conv-info">
+                  <span className="chat-conv-title">{conv.title}</span>
+                  {conv.lastMessage && (
+                    <span className="chat-conv-last">{conv.lastMessage}</span>
+                  )}
+                </div>
+                <button
+                  className="chat-conv-delete"
+                  onClick={(e) => handleDeleteConversation(e, conv._id)}
+                  title="حذف"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </aside>
     </div>
   );

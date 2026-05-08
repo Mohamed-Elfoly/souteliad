@@ -1179,28 +1179,123 @@ border-radius: 20px;
   display: block;
 }
 
-/* ── Sidebar message list (Chat_Message.jsx) ── */
-.mymessage-container {
-  margin-top: 12px;
+/* ── Sidebar header ── */
+.chat-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.chat-sidebar-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #373D41;
+}
+
+.chat-new-btn {
+  background: #EB6837;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.chat-new-btn:hover {
+  background: #c14c21;
+}
+
+/* ── Conversation list ── */
+.chat-conv-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
-.chat-msg-empty {
-  font-size: 14px;
-  color: #999;
-  margin: 0;
+.chat-conv-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-.chat-msg-item {
-  margin: 0;
-  font-size: 14px;
-  color: #707070;
-  max-width: 160px;
+.chat-conv-item:hover {
+  background: #f3f4f5;
+}
+
+.chat-conv-active {
+  background: #fff3ee;
+}
+
+.chat-conv-active .chat-conv-title {
+  color: #EB6837;
+}
+
+.chat-conv-icon {
+  color: #aaa;
+  flex-shrink: 0;
+}
+
+.chat-conv-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-conv-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #373D41;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.chat-conv-last {
+  font-size: 11px;
+  color: #999;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.chat-conv-delete {
+  background: transparent;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.chat-conv-item:hover .chat-conv-delete {
+  opacity: 1;
+}
+
+.chat-conv-delete:hover {
+  color: #D13131;
+}
+
+.chat-sidebar-empty {
+  font-size: 13px;
+  color: #aaa;
+  text-align: center;
+  margin-top: 20px;
 }
 
 .chat-msg-sender {

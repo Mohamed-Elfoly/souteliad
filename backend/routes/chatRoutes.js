@@ -7,8 +7,14 @@ const router = express.Router();
 
 router.use(authController.protect);
 
-router.post('/message', uploadChatImage, chatController.sendMessage);
-router.get('/history', chatController.getHistory);
-router.delete('/history', chatController.clearHistory);
+// Conversations
+router.get('/conversations', chatController.getConversations);
+router.post('/conversations', chatController.createConversation);
+router.delete('/conversations/:id', chatController.deleteConversation);
+
+// Messages within a conversation
+router.post('/conversations/:conversationId/message', uploadChatImage, chatController.sendMessage);
+router.get('/conversations/:conversationId/history', chatController.getHistory);
+router.delete('/conversations/:conversationId/history', chatController.clearHistory);
 
 module.exports = router;

@@ -1,7 +1,6 @@
-const fs = require('fs');
-const path = require('path');
 const Groq = require('groq-sdk');
 const ChatMessage = require('../models/chatMessageModel');
+const Conversation = require('../models/conversationModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
@@ -42,7 +41,50 @@ const SYSTEM_PROMPT = `أنت مساعد ذكي متخصص لمنصة "صوت ا
 - شجع الطالب دائماً على التدرب باستخدام ميزة الكاميرا في المنصة
 - إذا أُرسلت صورة: حاول وصف ما تراه وربطه بلغة الإشارة المصرية`;
 
+// ── Conversations ──
+
+exports.getConversations = catchAsync(async (req, res) => {
+  const conversations = await Conversation.find({ user: req.user.id })
+    .sort('-updatedAt')
+    .lean();
+
+  return res.status(200).json({
+    status: 'success',
+    results: conversations.length,
+    data: { conversations },
+  });
+});
+
+exports.createConversation = catchAsync(async (req, res) => {
+  const conversation = await Conversation.create({
+    user: req.user.id,
+    title: req.body.title || 'محادثة جديدة',
+  });
+
+  return res.status(201).json({
+    status: 'success',
+    data: { conversation },
+  });
+});
+
+exports.deleteConversation = catchAsync(async (req, res, next) => {
+  const conversation = await Conversation.findOne({
+    _id: req.params.id,
+    user: req.user.id,
+  });
+
+  if (!conversation) return next(new AppError('المحادثة غير موجودة', 404));
+
+  await ChatMessage.deleteMany({ conversationId: conversation._id });
+  await conversation.deleteOne();
+
+  return res.status(204).json({ status: 'success', data: null });
+});
+
+// ── Messages ──
+
 exports.sendMessage = catchAsync(async (req, res, next) => {
+  const { conversationId } = req.params;
   const message = req.body.message || '';
   const imageFile = req.file || null;
 
@@ -50,18 +92,30 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
     return next(new AppError('يجب إرسال رسالة أو صورة على الأقل', 400));
   }
 
-  const imageUrl = imageFile ? `/uploads/chat/${imageFile.filename}` : null;
+  // Verify conversation belongs to user
+  const conversation = await Conversation.findOne({
+    _id: conversationId,
+    user: req.user.id,
+  });
+  if (!conversation) return next(new AppError('المحادثة غير موجودة', 404));
+
+  let imageUrl = null;
+  if (imageFile) {
+    const { uploadImage } = require('../utils/cloudinary');
+    imageUrl = await uploadImage(imageFile.buffer, 'chat');
+  }
 
   // Save user message
   await ChatMessage.create({
     user: req.user.id,
+    conversationId,
     role: 'user',
     content: message.trim(),
     imageUrl,
   });
 
   // Fetch last 10 messages for context
-  const history = await ChatMessage.find({ user: req.user.id })
+  const history = await ChatMessage.find({ conversationId })
     .sort('-createdAt')
     .limit(10)
     .lean();
@@ -76,29 +130,17 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
 
   // Build current user message content
   let userContent;
-
   if (imageFile) {
-    const imageData = fs.readFileSync(imageFile.path);
-    const base64Image = imageData.toString('base64');
+    const base64Image = imageFile.buffer.toString('base64');
     const mimeType = imageFile.mimetype || 'image/jpeg';
-
     userContent = [
-      {
-        type: 'image_url',
-        image_url: {
-          url: `data:${mimeType};base64,${base64Image}`,
-        },
-      },
-      {
-        type: 'text',
-        text: message.trim() || 'ما هذه الإشارة؟ هل يمكنك تحليلها وشرحها؟',
-      },
+      { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Image}` } },
+      { type: 'text', text: message.trim() || 'ما هذه الإشارة؟ هل يمكنك تحليلها وشرحها؟' },
     ];
   } else {
     userContent = message.trim();
   }
 
-  // Call Groq
   const completion = await groq.chat.completions.create({
     model: imageFile ? 'meta-llama/llama-4-scout-17b-16e-instruct' : 'llama-3.3-70b-versatile',
     messages: [
@@ -114,23 +156,35 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
 
   const savedResponse = await ChatMessage.create({
     user: req.user.id,
+    conversationId,
     role: 'assistant',
     content: aiResponse,
   });
 
+  // Update conversation title (from first user message) and updatedAt
+  const updateData = { updatedAt: Date.now(), lastMessage: aiResponse.slice(0, 80) };
+  if (conversation.title === 'محادثة جديدة' && message.trim()) {
+    updateData.title = message.trim().slice(0, 60);
+  }
+  await Conversation.findByIdAndUpdate(conversationId, updateData);
+
   return res.status(200).json({
     status: 'success',
-    data: {
-      message: aiResponse,
-      messageId: savedResponse._id,
-    },
+    data: { message: aiResponse, messageId: savedResponse._id },
   });
 });
 
 exports.getHistory = catchAsync(async (req, res, next) => {
+  const { conversationId } = req.params;
   const limit = parseInt(req.query.limit, 10) || 50;
 
-  const messages = await ChatMessage.find({ user: req.user.id })
+  const conversation = await Conversation.findOne({
+    _id: conversationId,
+    user: req.user.id,
+  });
+  if (!conversation) return next(new AppError('المحادثة غير موجودة', 404));
+
+  const messages = await ChatMessage.find({ conversationId })
     .sort('-createdAt')
     .limit(limit)
     .lean();
@@ -138,17 +192,21 @@ exports.getHistory = catchAsync(async (req, res, next) => {
   return res.status(200).json({
     status: 'success',
     results: messages.length,
-    data: {
-      messages: messages.reverse(),
-    },
+    data: { messages: messages.reverse() },
   });
 });
 
 exports.clearHistory = catchAsync(async (req, res, next) => {
-  await ChatMessage.deleteMany({ user: req.user.id });
+  const { conversationId } = req.params;
 
-  return res.status(204).json({
-    status: 'success',
-    data: null,
+  const conversation = await Conversation.findOne({
+    _id: conversationId,
+    user: req.user.id,
   });
+  if (!conversation) return next(new AppError('المحادثة غير موجودة', 404));
+
+  await ChatMessage.deleteMany({ conversationId });
+  await Conversation.findByIdAndUpdate(conversationId, { lastMessage: '', updatedAt: Date.now() });
+
+  return res.status(204).json({ status: 'success', data: null });
 });
