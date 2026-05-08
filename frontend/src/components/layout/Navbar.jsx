@@ -979,7 +979,7 @@ const allSettingsItems = [
 export default function Navbar() {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
-  const isStaff = user?.role === ROLES.ADMIN ;
+  const isStaff = user?.role === ROLES.ADMIN || user?.role === ROLES.TEACHER;
   const settingsItems = allSettingsItems.filter((item) => !item.hideFor.includes(user?.role));
   const dashboardLink = user?.role === ROLES.ADMIN ? '/Students' : '/Dashboard';
 
