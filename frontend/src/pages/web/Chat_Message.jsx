@@ -16,6 +16,7 @@ export default function Chat_Message() {
   const { conversationId } = useParams();
   const navigate = useNavigate();
 
+
   const [showOptions, setShowOptions] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
@@ -55,9 +56,6 @@ export default function Chat_Message() {
       .finally(() => setLoadingHistory(false));
   }, [conversationId]);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
 
   // Camera functions
   const openCamera = useCallback(async () => {
