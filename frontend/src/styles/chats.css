@@ -1450,3 +1450,115 @@ border-radius: 20px;
   justify-content: center;
   padding: 0;
 }
+
+/* ================= CAMERA MODAL ================= */
+
+.camera-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.camera-modal {
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px;
+  width: 90%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  direction: rtl;
+}
+
+.camera-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: 700;
+  color: #373D41;
+}
+
+.camera-close-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+}
+
+.camera-close-btn:hover { color: #D13131; }
+
+.camera-video {
+  width: 100%;
+  border-radius: 12px;
+  background: #000;
+  max-height: 320px;
+  object-fit: cover;
+}
+
+.camera-preview {
+  width: 100%;
+  border-radius: 12px;
+  max-height: 320px;
+  object-fit: cover;
+}
+
+.camera-capture-btn {
+  background: #EB6837;
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.camera-capture-btn:hover { background: #c14c21; }
+
+.camera-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.camera-retake-btn {
+  flex: 1;
+  background: #f3f4f5;
+  color: #373D41;
+  border: none;
+  border-radius: 30px;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.camera-retake-btn:hover { background: #e4e4e4; }
+
+.camera-confirm-btn {
+  flex: 1;
+  background: #EB6837;
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.camera-confirm-btn:hover { background: #c14c21; }

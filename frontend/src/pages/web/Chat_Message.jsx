@@ -1,7 +1,7 @@
 import "../../styles/chats.css";
-import { Search, Send, Plus, Image, MessageCircle, Trash2, X } from "lucide-react";
+import { Search, Send, Plus, Image, MessageCircle, Trash2, X, Camera } from "lucide-react";
 import hello from "../../assets/images/hello2.png";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   sendMessage,
@@ -27,8 +27,15 @@ export default function Chat_Message() {
   const [conversations, setConversations] = useState([]);
   const [search, setSearch] = useState("");
 
+  // Camera states
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [cameraStream, setCameraStream] = useState(null);
+  const [captured, setCaptured] = useState(null);
+
   const imageInputRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
 
   // Load sidebar conversations
   useEffect(() => {
@@ -51,6 +58,56 @@ export default function Chat_Message() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Camera functions
+  const openCamera = useCallback(async () => {
+    setShowOptions(false);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+      setCameraStream(stream);
+      setCameraOpen(true);
+      setCaptured(null);
+    } catch {
+      alert("تعذّر الوصول إلى الكاميرا. تأكد من منح الإذن.");
+    }
+  }, []);
+
+  const closeCamera = useCallback(() => {
+    if (cameraStream) cameraStream.getTracks().forEach((t) => t.stop());
+    setCameraStream(null);
+    setCameraOpen(false);
+    setCaptured(null);
+  }, [cameraStream]);
+
+  useEffect(() => {
+    if (cameraOpen && cameraStream && videoRef.current) {
+      videoRef.current.srcObject = cameraStream;
+    }
+  }, [cameraOpen, cameraStream]);
+
+  const capturePhoto = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0);
+    setCaptured(canvas.toDataURL("image/jpeg", 0.9));
+  };
+
+  const confirmCapture = () => {
+    if (!captured) return;
+    // Convert base64 to File
+    const arr = captured.split(",");
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    const u8arr = new Uint8Array(bstr.length);
+    for (let i = 0; i < bstr.length; i++) u8arr[i] = bstr.charCodeAt(i);
+    const file = new File([u8arr], "camera-capture.jpg", { type: mime });
+    setSelectedImage(file);
+    setImagePreview(captured);
+    closeCamera();
+  };
 
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
@@ -232,8 +289,12 @@ export default function Chat_Message() {
               {showOptions && (
                 <div className="plus-menu">
                   <div className="menu-item" onClick={() => imageInputRef.current.click()}>
-                    <Image />
+                    <Image size={18} />
                     <span>صورة</span>
+                  </div>
+                  <div className="menu-item" onClick={openCamera}>
+                    <Camera size={18} />
+                    <span>كاميرا</span>
                   </div>
                 </div>
               )}
@@ -310,6 +371,43 @@ export default function Chat_Message() {
           </div>
         )}
       </aside>
+
+      {/* Camera Modal */}
+      {cameraOpen && (
+        <div className="camera-overlay" onClick={closeCamera}>
+          <div className="camera-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="camera-modal-header">
+              <span>التقط إشارتك</span>
+              <button className="camera-close-btn" onClick={closeCamera}>
+                <X size={18} />
+              </button>
+            </div>
+
+            {!captured ? (
+              <>
+                <video ref={videoRef} autoPlay playsInline className="camera-video" />
+                <canvas ref={canvasRef} style={{ display: "none" }} />
+                <button className="camera-capture-btn" onClick={capturePhoto}>
+                  <Camera size={22} />
+                  التقط صورة
+                </button>
+              </>
+            ) : (
+              <>
+                <img src={captured} alt="الصورة الملتقطة" className="camera-preview" />
+                <div className="camera-actions">
+                  <button className="camera-retake-btn" onClick={() => setCaptured(null)}>
+                    إعادة التقاط
+                  </button>
+                  <button className="camera-confirm-btn" onClick={confirmCapture}>
+                    إرسال
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
