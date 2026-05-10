@@ -1,5 +1,7 @@
 const Question = require('../models/questionModel');
 const factory = require('./handlerFactory');
+const catchAsync = require('../utils/catchAsync');
+const { uploadImage } = require('../utils/cloudinary');
 
 exports.setQuizId = (req, res, next) => {
   if (!req.body.quizId) req.body.quizId = req.params.quizId;
@@ -11,14 +13,13 @@ exports.setFilterObj = (req, res, next) => {
   next();
 };
 
-// Resolve imageUrl: uploaded file takes priority over imageUrl string from body
-exports.processImageField = (req, res, next) => {
+// Resolve imageUrl: uploaded file → Cloudinary, else keep URL string from body
+exports.processImageField = catchAsync(async (req, res, next) => {
   if (req.file) {
-    req.body.imageUrl = `${req.protocol}://${req.get('host')}/uploads/questions/${req.file.filename}`;
+    req.body.imageUrl = await uploadImage(req.file.buffer, 'questions');
   }
-  // else: imageUrl stays as whatever string was sent in body (link or undefined)
   next();
-};
+});
 
 exports.getAllQuestions = factory.getAll(Question);
 exports.getQuestion = factory.getOne(Question);

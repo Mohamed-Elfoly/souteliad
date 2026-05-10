@@ -68,7 +68,7 @@ module.exports = (err, req, res, next) => {
   else if (err.name === 'JsonWebTokenError') handledErr = handleJWTError();
   else if (err.name === 'TokenExpiredError') handledErr = handleJWTExpiredError();
 
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV !== 'production') {
     sendErrorDev(handledErr, req, res);
   } else {
     sendErrorProd(handledErr, req, res);

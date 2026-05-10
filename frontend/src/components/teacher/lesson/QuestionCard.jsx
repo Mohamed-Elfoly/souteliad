@@ -1,4 +1,5 @@
-import { Trash2, Plus, ImageIcon } from "lucide-react";
+import { Trash2, Plus, ImageIcon, Upload, X } from "lucide-react";
+import { useRef } from "react";
 
 export const Q_TYPES = [
   { value: "mcq", label: "اختيار متعدد" },
@@ -22,6 +23,17 @@ export function makeQuestion() {
 }
 
 export default function QuestionCard({ q, idx, onChange, onDelete }) {
+  const fileInputRef = useRef(null);
+
+  const handleImageFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => onChange({ ...q, imageUrl: ev.target.result });
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
   const handleTypeChange = (type) => {
     let options = q.options;
     if (type === "true-false")
@@ -201,21 +213,46 @@ export default function QuestionCard({ q, idx, onChange, onDelete }) {
             <ImageIcon size={12} /> صورة السؤال{" "}
             <span className="text-gray-300">(اختياري)</span>
           </label>
-          <input
-            type="url"
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400 bg-gray-50"
-            placeholder="https://... أدخل رابط صورة السؤال"
-            value={q.imageUrl || ""}
-            onChange={(e) => onChange({ ...q, imageUrl: e.target.value })}
-          />
+
+          <div className="flex gap-2 items-center">
+            <input
+              type="text"
+              className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400 bg-gray-50"
+              placeholder="https://... أدخل رابط صورة السؤال"
+              value={q.imageUrl?.startsWith("data:") ? "" : (q.imageUrl || "")}
+              onChange={(e) => onChange({ ...q, imageUrl: e.target.value })}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current.click()}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-orange-300 text-orange-400 text-xs hover:bg-orange-50 transition-colors whitespace-nowrap"
+            >
+              <Upload size={13} /> رفع صورة
+            </button>
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={handleImageFile}
+            />
+          </div>
+
           {q.imageUrl && (
-            <div className="mt-2 rounded-xl overflow-hidden max-h-32">
+            <div className="mt-2 rounded-xl overflow-hidden relative">
               <img
                 src={q.imageUrl}
                 alt="معاينة صورة السؤال"
                 className="w-full object-contain max-h-32"
                 onError={(e) => { e.target.style.display = "none"; }}
               />
+              <button
+                type="button"
+                onClick={() => onChange({ ...q, imageUrl: "" })}
+                className="absolute top-1 left-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600"
+              >
+                <X size={11} />
+              </button>
             </div>
           )}
         </div>

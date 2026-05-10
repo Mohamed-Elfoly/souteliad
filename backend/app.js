@@ -29,6 +29,7 @@ const aiPracticeRouter = require('./routes/aiPracticeRoutes');
 const statsRouter = require('./routes/statsRoutes');
 const supportTicketRouter = require('./routes/supportTicketRoutes');
 const ratingRouter = require('./routes/ratingRoutes');
+const chatRouter = require('./routes/chatRoutes');
 
 const app = express();
 
@@ -38,7 +39,19 @@ const app = express();
 app.use(helmet());
 
 // Implement CORS
-app.use(cors({ origin: process.env.CORS_ORIGIN }));
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+  : [];
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow Postman and server-to-server calls (no origin)
+      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+      callback(new Error(`CORS: ${origin} not allowed`));
+    },
+    credentials: true,
+  })
+);
 app.options('*', cors());
 
 // Serving static files
@@ -55,6 +68,7 @@ const limiter = rateLimit({
   max: 100,
   windowMs: 15 * 60 * 1000,
   message: 'Too many requests from this IP, please try again later',
+  validate: { xForwardedForHeader: false },
 });
 app.use('/api', limiter);
 
@@ -93,6 +107,7 @@ app.use('/api/v1/ai-practice', aiPracticeRouter);
 app.use('/api/v1/stats', statsRouter);
 app.use('/api/v1/support', supportTicketRouter);
 app.use('/api/v1/ratings', ratingRouter);
+app.use('/api/v1/chat', chatRouter);
 
 // Health check route
 app.get('/api/v1/health', (req, res) => {
