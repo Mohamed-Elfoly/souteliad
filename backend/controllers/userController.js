@@ -39,9 +39,10 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     'profilePicture'
   );
 
-  // If a file was uploaded, set the profilePicture path
+  // If a file was uploaded, upload to Cloudinary
   if (req.file) {
-    filteredBody.profilePicture = `/uploads/users/${req.file.filename}`;
+    const { uploadImage } = require('../utils/cloudinary');
+    filteredBody.profilePicture = await uploadImage(req.file.buffer, 'users');
   }
 
   // 3) Update user document

@@ -1,0 +1,92 @@
+name: sout_elyad_mobile
+description: Sout Elyad - Arabic Sign Language Learning App
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Navigation
+  go_router: ^13.2.0
+
+  # HTTP
+  dio: ^5.4.3+1
+
+  # Secure storage (JWT token)
+  flutter_secure_storage: ^9.0.0
+
+  # Image
+  cached_network_image: ^3.3.1
+  image_picker: ^1.1.2
+
+  # UI helpers
+  flutter_svg: ^2.0.10+1
+  smooth_page_indicator: ^1.1.0
+  percent_indicator: ^4.2.3
+
+  # Forms
+  flutter_form_builder: ^10.3.0
+  form_builder_validators: ^11.0.0
+
+  # Notifications / Snackbar
+  awesome_snackbar_content: ^0.1.3
+
+  # Video player
+  video_player: ^2.8.6
+  chewie: ^1.8.5
+  youtube_player_flutter: ^9.1.1
+
+  # Intl / Date
+  intl: ^0.20.2
+
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  build_runner: ^2.4.9
+  riverpod_generator: ^2.4.0
+  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.5
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo1.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/logo1.png"
+
+flutter_native_splash:
+  color: "#EB6837"
+  image: assets/images/logo.png
+  android: true
+  ios: true
+  fullscreen: false
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+
+  fonts:
+    - family: Rubik
+      fonts:
+        - asset: assets/fonts/Rubik-Regular.ttf
+        - asset: assets/fonts/Rubik-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Rubik-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Rubik-Bold.ttf
+          weight: 700

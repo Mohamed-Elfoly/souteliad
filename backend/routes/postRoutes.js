@@ -25,7 +25,6 @@ router
   .get(postController.getPost)
   .patch(postController.updatePost)
   .delete(
-    authController.checkPermission('canDeleteContent'),
     postController.checkPostOwnership,
     postController.deletePost
   );

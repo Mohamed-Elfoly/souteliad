@@ -60,8 +60,13 @@ exports.submitQuiz = catchAsync(async (req, res, next) => {
         (a) => a.questionId === question._id.toString()
       );
 
-      if (userAnswer && question.options[userAnswer.selectedOptionId]) {
-        if (question.options[userAnswer.selectedOptionId].isCorrect) {
+      if (userAnswer && userAnswer.selectedOptionId !== undefined) {
+        const sid = userAnswer.selectedOptionId.toString();
+        // Support both: MongoDB _id string OR numeric index
+        const selectedOption =
+          question.options.id(sid) ??
+          question.options[parseInt(sid, 10)];
+        if (selectedOption?.isCorrect) {
           earnedMarks += question.marks;
         }
       }

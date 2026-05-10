@@ -1,32 +1,15 @@
-const fs = require('fs');
-const path = require('path');
 const Lesson = require('../models/lessonModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const factory = require('./handlerFactory');
+const { uploadImage } = require('../utils/cloudinary');
 
-// Save a base64 data URI to disk, return the filename or null
-const saveBase64File = (dataUri, folder, prefix, userId) => {
-  const match = dataUri.match(/^data:([a-zA-Z0-9+/]+\/[a-zA-Z0-9+/]+);base64,(.+)$/);
+// Upload base64 image to Cloudinary, return secure URL or null
+const uploadBase64ToCloudinary = async (dataUri, folder) => {
+  const match = dataUri.match(/^data:image\/[a-zA-Z+]+;base64,(.+)$/);
   if (!match) return null;
-
-  const mimeType = match[1];
-  const base64Data = match[2];
-
-  const extMap = {
-    'image/jpeg': '.jpg', 'image/jpg': '.jpg', 'image/png': '.png',
-    'image/webp': '.webp', 'image/gif': '.gif',
-    'video/mp4': '.mp4', 'video/webm': '.webm', 'video/ogg': '.ogv',
-  };
-  const ext = extMap[mimeType];
-  if (!ext) return null;
-
-  const filename = `${prefix}-${userId}-${Date.now()}${ext}`;
-  const destDir = path.join(__dirname, '..', 'public', 'uploads', folder);
-  if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
-
-  fs.writeFileSync(path.join(destDir, filename), Buffer.from(base64Data, 'base64'));
-  return filename;
+  const buffer = Buffer.from(match[1], 'base64');
+  return uploadImage(buffer, folder);
 };
 
 exports.setLevelTeacherIds = (req, res, next) => {
@@ -41,34 +24,20 @@ exports.setFilterObj = (req, res, next) => {
 };
 
 // Resolve media fields: multer file > base64 > URL string
-exports.processMediaFields = (req, res, next) => {
+exports.processMediaFields = catchAsync(async (req, res, next) => {
   const files = req.files || {};
-  const baseUrl = `${req.protocol}://${req.get('host')}`;
 
   // ── Thumbnail ──
   if (files.thumbnailFile?.[0]) {
-    // multer file upload
-    req.body.thumbnailUrl = `${baseUrl}/uploads/lessons/images/${files.thumbnailFile[0].filename}`;
+    req.body.thumbnailUrl = await uploadImage(files.thumbnailFile[0].buffer, 'lessons');
   } else if (req.body.thumbnailUrl?.startsWith('data:image/')) {
-    // base64 from frontend
-    const filename = saveBase64File(req.body.thumbnailUrl, 'lessons/images', 'lesson-img', req.user.id);
-    if (filename) req.body.thumbnailUrl = `${baseUrl}/uploads/lessons/images/${filename}`;
+    const url = await uploadBase64ToCloudinary(req.body.thumbnailUrl, 'lessons');
+    if (url) req.body.thumbnailUrl = url;
     else delete req.body.thumbnailUrl;
   }
 
-  // ── Video ──
-  if (files.videoFile?.[0]) {
-    // multer file upload
-    req.body.videoUrl = `${baseUrl}/uploads/lessons/videos/${files.videoFile[0].filename}`;
-  } else if (req.body.videoUrl?.startsWith('data:video/')) {
-    // base64 from frontend
-    const filename = saveBase64File(req.body.videoUrl, 'lessons/videos', 'lesson-vid', req.user.id);
-    if (filename) req.body.videoUrl = `${baseUrl}/uploads/lessons/videos/${filename}`;
-    else delete req.body.videoUrl;
-  }
-
   next();
-};
+});
 
 exports.getAllLessons = factory.getAll(Lesson);
 exports.getLesson = factory.getOne(Lesson, [{ path: 'quizzes' }, { path: 'levelId', select: 'title' }]);

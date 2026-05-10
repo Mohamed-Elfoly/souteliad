@@ -979,7 +979,7 @@ const allSettingsItems = [
 export default function Navbar() {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
-  const isStaff = user?.role === ROLES.ADMIN ;
+  const isStaff = user?.role === ROLES.ADMIN || user?.role === ROLES.TEACHER;
   const settingsItems = allSettingsItems.filter((item) => !item.hideFor.includes(user?.role));
   const dashboardLink = user?.role === ROLES.ADMIN ? '/Students' : '/Dashboard';
 
@@ -1044,7 +1044,7 @@ export default function Navbar() {
     <>
       <header
         className="
-          w-full min-w-0 overflow-x-hidden
+          w-full min-w-0
           sticky top-0 z-40
           flex items-center justify-between
           bg-white border-b border-gray-200

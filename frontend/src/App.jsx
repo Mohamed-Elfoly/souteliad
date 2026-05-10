@@ -457,7 +457,7 @@ function AppRoutes() {
           <Route path="/landingpage" element={<Navigate to="/LandingpageLogin" replace />} />
           <Route element={<ProtectedRoute allowedRoles={[ROLES.USER]} />}>
             <Route path="/Chats"        element={<Chats />} />
-            <Route path="/Chat_Message" element={<Chat_Message />} />
+            <Route path="/Chat_Message/:conversationId" element={<Chat_Message />} />
             <Route path="/Problem"      element={<Problem />} />
             <Route path="/Solvenow"     element={<Solvenow />} />
           </Route>
