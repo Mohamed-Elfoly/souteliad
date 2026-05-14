@@ -9,15 +9,15 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'https://souteliad-production.up.railway.app',
+        target: 'http://localhost:3002',
         changeOrigin: true,
       },
       '/img': {
-        target: 'https://souteliad-production.up.railway.app',
+        target: 'http://localhost:3002',
         changeOrigin: true,
       },
       '/uploads': {
-        target: 'https://souteliad-production.up.railway.app',
+        target: 'http://localhost:3002',
         changeOrigin: true,
       },
     },
