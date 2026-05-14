@@ -9,8 +9,8 @@ const factory = require('./handlerFactory');
 exports.submitQuiz = catchAsync(async (req, res, next) => {
   const { quizId, answers } = req.body;
 
-  if (!quizId || !answers || !answers.length) {
-    return next(new AppError('Please provide quizId and answers', 400));
+  if (!quizId || !Array.isArray(answers)) {
+    return next(new AppError('Please provide quizId and answers array', 400));
   }
 
   // 1) Fetch all questions for this quiz

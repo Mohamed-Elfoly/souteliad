@@ -2,18 +2,16 @@ const Question = require('../models/questionModel');
 const AIPracticeResult = require('../models/aiPracticeResultModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
-const { analyzeSign } = require('../utils/mockAI');
+const { analyzeSign } = require('../utils/signAI');
 
-// User sends video → mock AI evaluates → result saved to DB → feedback returned
+// User sends video → AI evaluates (Python HF → Gemini fallback) → result saved → feedback returned
 exports.evaluateSign = catchAsync(async (req, res, next) => {
   const { questionId } = req.params;
 
-  // 1) Check video was uploaded
   if (!req.file) {
     return next(new AppError('Please upload a video of your sign', 400));
   }
 
-  // 2) Find the question and verify it's ai-practice type
   const question = await Question.findById(questionId);
 
   if (!question) {
@@ -26,10 +24,13 @@ exports.evaluateSign = catchAsync(async (req, res, next) => {
     );
   }
 
-  // 3) Run mock AI analysis on the uploaded video
-  const aiResult = analyzeSign(question.expectedSign);
+  // Real AI analysis: Python HF service first, Gemini Vision fallback
+  const aiResult = await analyzeSign(
+    req.file.buffer,
+    question.expectedSign,
+    req.file.mimetype
+  );
 
-  // 4) Save result to DB
   const result = await AIPracticeResult.create({
     userId: req.user.id,
     questionId: question._id,
@@ -38,7 +39,6 @@ exports.evaluateSign = catchAsync(async (req, res, next) => {
     feedback: aiResult.feedback,
   });
 
-  // 5) Return feedback to user
   return res.status(200).json({
     status: 'success',
     data: {
@@ -46,9 +46,12 @@ exports.evaluateSign = catchAsync(async (req, res, next) => {
       questionId: question._id,
       questionText: question.questionText,
       expectedSign: aiResult.expectedSign,
+      detected: aiResult.detected,
       accuracy: aiResult.accuracy,
       passed: aiResult.passed,
       feedback: aiResult.feedback,
+      source: aiResult.source,
+      top5: aiResult.top5,
     },
   });
 });

@@ -3,3 +3,21 @@ node_modules/
 *.log
 .DS_Store
 Thumbs.db
+
+# Python sign-service
+sign-service/venv/
+sign-service/debug_logs/
+sign-service/__pycache__/
+sign-service/**/__pycache__/
+sign-service/*.pyc
+
+# Sign service model files (downloaded separately, too large for git)
+sign-service/models/asl_swinv2_best.pth
+
+# User-uploaded local images (only in dev — production uses Cloudinary)
+backend/public/uploads/chat/
+backend/public/uploads/users/
+backend/public/uploads/lessons/
+
+# Local IDE settings
+.claude/settings.local.json

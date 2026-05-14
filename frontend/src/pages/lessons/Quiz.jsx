@@ -4,7 +4,8 @@ import congratulation from "../../assets/images/congratulation.png";
 import { ChevronLeft, Play, RotateCcw, Video, Info } from "lucide-react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { getQuestions, submitQuizAttempt } from "../../api/quizApi";
+import { getQuestions, submitQuizAttempt, submitAiPractice } from "../../api/quizApi";
+import toast from "react-hot-toast";
 
 const QUESTION_TITLES = [
   'السؤال الأول', 'السؤال الثاني', 'السؤال الثالث', 'السؤال الرابع',
@@ -28,6 +29,8 @@ export default function Quiz() {
   const [phase, setPhase]       = useState('idle');
   const [preCount, setPreCount] = useState(PRE_SECONDS);
   const [recCount, setRecCount] = useState(REC_SECONDS);
+  const [aiSubmitting, setAiSubmitting] = useState(false);
+  const [aiResult, setAiResult] = useState(null);
 
   const videoRef         = useRef(null);
   const streamRef        = useRef(null);
@@ -77,6 +80,38 @@ export default function Quiz() {
     setPreCount(PRE_SECONDS);
     setRecCount(REC_SECONDS);
     setCameraError(null);
+    setAiResult(null);
+  };
+
+  const submitAiVideo = async () => {
+    if (!recordedChunks.current.length || !question?._id) {
+      toast.error('لم يتم تسجيل أي فيديو');
+      return;
+    }
+    setAiSubmitting(true);
+    try {
+      const blob = new Blob(recordedChunks.current, { type: 'video/webm' });
+      const res = await submitAiPractice(question._id, blob);
+      const result = res?.data?.data;
+      setAiResult(result);
+      setAnswers((prev) => ({
+        ...prev,
+        [question._id]: {
+          accuracy: result.accuracy,
+          passed: result.passed,
+          detected: result.detected,
+        },
+      }));
+      if (result.passed) {
+        toast.success(result.feedback || 'أحسنت!');
+      } else {
+        toast.error(result.feedback || 'حاول مرة أخرى');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'حدث خطأ أثناء تحليل الفيديو');
+    } finally {
+      setAiSubmitting(false);
+    }
   };
 
   useEffect(() => {
@@ -145,13 +180,14 @@ export default function Quiz() {
   };
 
   const handleSubmit = () => {
-    mutation.mutate({
-      quizId,
-      answers: Object.entries(answers).map(([questionId, selectedOptionId]) => ({
+    // Filter out AI practice answers (they're saved separately via /ai-practice endpoint)
+    const mcqAnswers = Object.entries(answers)
+      .filter(([, val]) => typeof val === 'number')
+      .map(([questionId, selectedOptionId]) => ({
         questionId,
         selectedOptionId,
-      })),
-    });
+      }));
+    mutation.mutate({ quizId, answers: mcqAnswers });
   };
 
   const goNext = () => {
@@ -471,20 +507,73 @@ export default function Quiz() {
                   </button>
                 )}
 
-                {phase === 'done' && (
+                {phase === 'done' && !aiResult && (
                   <div className="flex gap-3 items-center justify-end mt-1">
                     <button
-                      className="bg-transparent text-[#373D41] border border-[#EB6837] px-10 py-2.5 rounded-full text-xl font-bold cursor-pointer flex items-center gap-1.5 hover:bg-[#EB6837] hover:text-white transition-colors"
+                      className="bg-transparent text-[#373D41] border border-[#EB6837] px-10 py-2.5 rounded-full text-xl font-bold cursor-pointer flex items-center gap-1.5 hover:bg-[#EB6837] hover:text-white transition-colors disabled:opacity-60"
                       onClick={openCamera}
+                      disabled={aiSubmitting}
                     >
                       <RotateCcw size={14} /> إعادة المحاولة
                     </button>
                     <button
-                      className="bg-[#EB6837] text-white px-11 py-3.5 rounded-full text-xl font-bold cursor-pointer hover:bg-[#dc5727] transition-colors"
-                      onClick={() => setShowModal(true)}
+                      className="bg-[#EB6837] text-white px-11 py-3.5 rounded-full text-xl font-bold cursor-pointer hover:bg-[#dc5727] transition-colors disabled:opacity-60"
+                      onClick={submitAiVideo}
+                      disabled={aiSubmitting}
                     >
-                      تأكيد الإجابة
+                      {aiSubmitting ? 'جاري التحليل...' : 'تحليل الإشارة'}
                     </button>
+                  </div>
+                )}
+
+                {aiResult && (
+                  <div className="mt-5">
+                    <div
+                      className={`rounded-2xl p-5 mb-4 ${
+                        aiResult.passed
+                          ? 'bg-green-50 border-2 border-green-200'
+                          : 'bg-red-50 border-2 border-red-200'
+                      }`}
+                      dir="rtl"
+                    >
+                      <div className="flex items-center gap-3 mb-3">
+                        <div
+                          className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl text-white font-bold ${
+                            aiResult.passed ? 'bg-green-500' : 'bg-red-500'
+                          }`}
+                        >
+                          {aiResult.passed ? '✓' : '✗'}
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-[#373D41]">
+                            {aiResult.passed ? 'أحسنت!' : 'حاول مرة أخرى'}
+                          </h3>
+                          <p className="text-sm text-gray-600">{aiResult.feedback}</p>
+                        </div>
+                      </div>
+                      {aiResult.detected && (
+                        <div className="text-sm">
+                          <div className="bg-white rounded-lg p-2.5">
+                            <span className="text-gray-500">المكتشف:</span>{' '}
+                            <strong>{aiResult.detected}</strong>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex gap-3 items-center justify-end">
+                      <button
+                        className="bg-transparent text-[#373D41] border border-[#EB6837] px-10 py-2.5 rounded-full text-xl font-bold cursor-pointer flex items-center gap-1.5 hover:bg-[#EB6837] hover:text-white transition-colors"
+                        onClick={openCamera}
+                      >
+                        <RotateCcw size={14} /> إعادة المحاولة
+                      </button>
+                      <button
+                        className="bg-[#EB6837] text-white px-11 py-3.5 rounded-full text-xl font-bold cursor-pointer hover:bg-[#dc5727] transition-colors"
+                        onClick={() => setShowModal(true)}
+                      >
+                        {isLastQuestion ? 'إنهاء الاختبار' : 'السؤال التالي'}
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
