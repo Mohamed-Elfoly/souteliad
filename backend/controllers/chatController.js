@@ -1,10 +1,86 @@
 const Groq = require('groq-sdk');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const ChatMessage = require('../models/chatMessageModel');
 const Conversation = require('../models/conversationModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// Call Gemini for text/image/video
+const askGemini = async ({ chatHistory, userText, imageFile, videoFile }) => {
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-2.5-flash',
+    systemInstruction: SYSTEM_PROMPT,
+  });
+
+  // Build history as Gemini contents
+  const contents = chatHistory.map((msg) => ({
+    role: msg.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: msg.content }],
+  }));
+
+  // Build current user turn (text + optional media)
+  const parts = [];
+  if (imageFile) {
+    parts.push({
+      inlineData: {
+        mimeType: imageFile.mimetype || 'image/jpeg',
+        data: imageFile.buffer.toString('base64'),
+      },
+    });
+  }
+  if (videoFile) {
+    parts.push({
+      inlineData: {
+        mimeType: videoFile.mimetype || 'video/webm',
+        data: videoFile.buffer.toString('base64'),
+      },
+    });
+  }
+  parts.push({
+    text: userText || (videoFile
+      ? 'شاهد الفيديو وحدد ما الإشارة التي قمت بها بلغة الإشارة العربية، ثم اشرحها لي بإيجاز.'
+      : (imageFile ? 'ما هذه الإشارة؟ هل يمكنك تحليلها وشرحها؟' : '')),
+  });
+
+  contents.push({ role: 'user', parts });
+
+  const result = await model.generateContent({ contents });
+  return result.response.text();
+};
+
+// Fallback: Groq (text-only OR image)
+const askGroq = async ({ chatHistory, userText, imageFile }) => {
+  let userContent;
+  if (imageFile) {
+    const base64Image = imageFile.buffer.toString('base64');
+    const mimeType = imageFile.mimetype || 'image/jpeg';
+    userContent = [
+      { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Image}` } },
+      { type: 'text', text: userText || 'ما هذه الإشارة؟ هل يمكنك تحليلها وشرحها؟' },
+    ];
+  } else {
+    userContent = userText;
+  }
+
+  const completion = await groq.chat.completions.create({
+    model: imageFile ? 'meta-llama/llama-4-scout-17b-16e-instruct' : 'llama-3.3-70b-versatile',
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      ...chatHistory.map((msg) => ({
+        role: msg.role === 'assistant' ? 'assistant' : 'user',
+        content: msg.content || '(صورة)',
+      })),
+      { role: 'user', content: userContent },
+    ],
+    temperature: 0.7,
+    max_tokens: 1024,
+  });
+
+  return completion.choices[0].message.content;
+};
 
 const SYSTEM_PROMPT = `أنت مساعد ذكي متخصص لمنصة "صوت اليد" — منصة تعليمية عربية متخصصة في تعليم لغة الإشارة المصرية (Egyptian Sign Language / ESL).
 
@@ -86,10 +162,11 @@ exports.deleteConversation = catchAsync(async (req, res, next) => {
 exports.sendMessage = catchAsync(async (req, res, next) => {
   const { conversationId } = req.params;
   const message = req.body.message || '';
-  const imageFile = req.file || null;
+  const imageFile = req.files?.image?.[0] || null;
+  const videoFile = req.files?.video?.[0] || null;
 
-  if (!message.trim() && !imageFile) {
-    return next(new AppError('يجب إرسال رسالة أو صورة على الأقل', 400));
+  if (!message.trim() && !imageFile && !videoFile) {
+    return next(new AppError('يجب إرسال رسالة أو صورة أو فيديو على الأقل', 400));
   }
 
   // Verify conversation belongs to user
@@ -106,11 +183,15 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
   }
 
   // Save user message
+  const userMessageContent = videoFile
+    ? (message.trim() || '🎥 فيديو إشارة')
+    : message.trim();
+
   await ChatMessage.create({
     user: req.user.id,
     conversationId,
     role: 'user',
-    content: message.trim(),
+    content: userMessageContent,
     imageUrl,
   });
 
@@ -122,37 +203,32 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
 
   const chatHistory = history
     .reverse()
-    .slice(0, -1)
-    .map((msg) => ({
-      role: msg.role === 'assistant' ? 'assistant' : 'user',
-      content: msg.content || '(صورة)',
-    }));
+    .slice(0, -1);
 
-  // Build current user message content
-  let userContent;
-  if (imageFile) {
-    const base64Image = imageFile.buffer.toString('base64');
-    const mimeType = imageFile.mimetype || 'image/jpeg';
-    userContent = [
-      { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Image}` } },
-      { type: 'text', text: message.trim() || 'ما هذه الإشارة؟ هل يمكنك تحليلها وشرحها؟' },
-    ];
-  } else {
-    userContent = message.trim();
+  // Try Gemini first (handles text, image, AND video). Fall back to Groq if Gemini fails.
+  let aiResponse;
+  let usedFallback = false;
+  try {
+    aiResponse = await askGemini({
+      chatHistory,
+      userText: message.trim(),
+      imageFile,
+      videoFile,
+    });
+  } catch (err) {
+    console.error('[chat] Gemini failed, falling back to Groq:', err.message);
+    if (videoFile) {
+      // Groq can't process video — return a friendly error
+      aiResponse = 'عذراً، حدث خطأ أثناء تحليل الفيديو. حاول مرة أخرى.';
+    } else {
+      try {
+        aiResponse = await askGroq({ chatHistory, userText: message.trim(), imageFile });
+        usedFallback = true;
+      } catch (err2) {
+        aiResponse = 'عذراً، حدث خطأ. يرجى المحاولة مرة أخرى.';
+      }
+    }
   }
-
-  const completion = await groq.chat.completions.create({
-    model: imageFile ? 'meta-llama/llama-4-scout-17b-16e-instruct' : 'llama-3.3-70b-versatile',
-    messages: [
-      { role: 'system', content: SYSTEM_PROMPT },
-      ...chatHistory,
-      { role: 'user', content: userContent },
-    ],
-    temperature: 0.7,
-    max_tokens: 1024,
-  });
-
-  const aiResponse = completion.choices[0].message.content;
 
   const savedResponse = await ChatMessage.create({
     user: req.user.id,
@@ -163,8 +239,10 @@ exports.sendMessage = catchAsync(async (req, res, next) => {
 
   // Update conversation title (from first user message) and updatedAt
   const updateData = { updatedAt: Date.now(), lastMessage: aiResponse.slice(0, 80) };
-  if (conversation.title === 'محادثة جديدة' && message.trim()) {
-    updateData.title = message.trim().slice(0, 60);
+  if (conversation.title === 'محادثة جديدة') {
+    const titleSource = message.trim()
+      || (videoFile ? '🎥 فيديو إشارة' : (imageFile ? '🖼️ صورة إشارة' : ''));
+    if (titleSource) updateData.title = titleSource.slice(0, 60);
   }
   await Conversation.findByIdAndUpdate(conversationId, updateData);
 

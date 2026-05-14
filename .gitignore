@@ -14,6 +14,9 @@ sign-service/*.pyc
 # Sign service model files (downloaded separately, too large for git)
 sign-service/models/asl_swinv2_best.pth
 
+# Friend's raw KArSL model dump (huge files, not used in the project)
+KARSL V.2_/
+
 # User-uploaded local images (only in dev — production uses Cloudinary)
 backend/public/uploads/chat/
 backend/public/uploads/users/

@@ -42,7 +42,7 @@ const tryKarslService = async (videoBuffer, expectedSign, mimeType) => {
 
 // ─── Gemini Vision fallback ────────────────────────────────────────────────
 const tryGemini = async (videoBuffer, expectedSign, mimeType = 'video/mp4') => {
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
   const prompt = `You are evaluating a student learning Arabic Sign Language.
 Expected sign: "${expectedSign}"
@@ -77,24 +77,29 @@ Respond ONLY in this JSON format:
 };
 
 // ─── Main entry ────────────────────────────────────────────────────────────
+const isDigit = (s) => /^\d+$/.test((s || '').trim());
+
 const analyzeSign = async (videoBuffer, expectedSign, mimeType) => {
-  // 1) Try KArSL BiLSTM (specialized Arabic Sign Language model)
-  const karslResult = await tryKarslService(videoBuffer, expectedSign, mimeType);
-  if (karslResult) {
-    return {
-      expectedSign,
-      detected: karslResult.detected,
-      accuracy: karslResult.accuracy,
-      passed: karslResult.passed,
-      feedback: karslResult.passed
-        ? `أحسنت! تم التعرف على الإشارة "${karslResult.detected}" بنجاح.`
-        : `حاول مرة أخرى. تم التعرف على "${karslResult.detected}" لكن المطلوب "${expectedSign}".`,
-      source: karslResult.source,
-      top5: karslResult.top5,
-    };
+  // If expected sign is a number, skip SwinV2 (letters only) and go straight to Gemini
+  if (!isDigit(expectedSign)) {
+    // 1) Try SwinV2 (specialized Arabic Sign Language letters model — 99.4% accuracy)
+    const karslResult = await tryKarslService(videoBuffer, expectedSign, mimeType);
+    if (karslResult) {
+      return {
+        expectedSign,
+        detected: karslResult.detected,
+        accuracy: karslResult.accuracy,
+        passed: karslResult.passed,
+        feedback: karslResult.passed
+          ? `أحسنت! تم التعرف على الإشارة "${karslResult.detected}" بنجاح.`
+          : `حاول مرة أخرى. تم التعرف على "${karslResult.detected}" لكن المطلوب "${expectedSign}".`,
+        source: karslResult.source,
+        top5: karslResult.top5,
+      };
+    }
   }
 
-  // 2) Fall back to Gemini Vision (if Python service unavailable)
+  // 2) Fall back to Gemini Vision (numbers, or if Python service unavailable)
   try {
     const geminiResult = await tryGemini(videoBuffer, expectedSign, mimeType);
     return {

@@ -18,13 +18,15 @@ export const deleteConversation = async (id) => {
 
 // ── Messages ──
 
-export const sendMessage = async (conversationId, message, imageFile = null) => {
+export const sendMessage = async (conversationId, message, imageFile = null, videoBlob = null) => {
   const formData = new FormData();
   if (message) formData.append('message', message);
   if (imageFile) formData.append('image', imageFile);
+  if (videoBlob) formData.append('video', videoBlob, 'sign.webm');
 
   const res = await api.post(`/chat/conversations/${conversationId}/message`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 60000,
   });
   return res.data.data;
 };

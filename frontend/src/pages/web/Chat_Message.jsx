@@ -1,5 +1,5 @@
 import "../../styles/chats.css";
-import { Search, Send, Plus, Image, MessageCircle, Trash2, X, Camera } from "lucide-react";
+import { Search, Send, Plus, Image, MessageCircle, Trash2, X, Camera, Video, Square } from "lucide-react";
 import hello from "../../assets/images/hello2.png";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -28,15 +28,23 @@ export default function Chat_Message() {
   const [conversations, setConversations] = useState([]);
   const [search, setSearch] = useState("");
 
-  // Camera states
+  // Camera / video states
   const [cameraOpen, setCameraOpen] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
   const [captured, setCaptured] = useState(null);
+  const [cameraMode, setCameraMode] = useState("photo"); // "photo" | "video"
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordCountdown, setRecordCountdown] = useState(0);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState(null);
 
   const imageInputRef = useRef(null);
   const messagesEndRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const recordedChunks = useRef([]);
+  const recordTimerRef = useRef(null);
 
   // Load sidebar conversations
   useEffect(() => {
@@ -58,12 +66,13 @@ export default function Chat_Message() {
 
 
   // Camera functions
-  const openCamera = useCallback(async () => {
+  const openCamera = useCallback(async (mode = "photo") => {
     setShowOptions(false);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
       setCameraStream(stream);
       setCameraOpen(true);
+      setCameraMode(mode);
       setCaptured(null);
     } catch {
       alert("تعذّر الوصول إلى الكاميرا. تأكد من منح الإذن.");
@@ -71,11 +80,64 @@ export default function Chat_Message() {
   }, []);
 
   const closeCamera = useCallback(() => {
+    if (recordTimerRef.current) {
+      clearInterval(recordTimerRef.current);
+      recordTimerRef.current = null;
+    }
+    try { mediaRecorderRef.current?.stop(); } catch { /* ignore */ }
     if (cameraStream) cameraStream.getTracks().forEach((t) => t.stop());
     setCameraStream(null);
     setCameraOpen(false);
     setCaptured(null);
+    setIsRecording(false);
+    setRecordCountdown(0);
+    mediaRecorderRef.current = null;
+    recordedChunks.current = [];
   }, [cameraStream]);
+
+  const REC_SECONDS = 5;
+
+  const startRecording = () => {
+    if (!cameraStream) return;
+    recordedChunks.current = [];
+    const mimeType = MediaRecorder.isTypeSupported("video/webm") ? "video/webm" : "";
+    const mr = new MediaRecorder(cameraStream, mimeType ? { mimeType } : {});
+    mr.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.current.push(e.data); };
+    mr.onstop = () => {
+      const blob = new Blob(recordedChunks.current, { type: "video/webm" });
+      setCaptured(URL.createObjectURL(blob));
+      setIsRecording(false);
+    };
+    mr.start();
+    mediaRecorderRef.current = mr;
+    setIsRecording(true);
+    setRecordCountdown(REC_SECONDS);
+
+    let remaining = REC_SECONDS;
+    recordTimerRef.current = setInterval(() => {
+      remaining -= 1;
+      setRecordCountdown(remaining);
+      if (remaining <= 0) {
+        clearInterval(recordTimerRef.current);
+        recordTimerRef.current = null;
+        try { mr.stop(); } catch { /* ignore */ }
+      }
+    }, 1000);
+  };
+
+  const confirmVideo = () => {
+    if (!recordedChunks.current.length) return;
+    const blob = new Blob(recordedChunks.current, { type: "video/webm" });
+    setSelectedVideo(blob);
+    setVideoPreviewUrl(URL.createObjectURL(blob));
+    closeCamera();
+  };
+
+  const clearSelectedVideo = () => {
+    if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
+    setSelectedVideo(null);
+    setVideoPreviewUrl(null);
+  };
 
   useEffect(() => {
     if (cameraOpen && cameraStream && videoRef.current) {
@@ -123,29 +185,34 @@ export default function Chat_Message() {
   };
 
   const handleSend = async () => {
-    if ((input.trim() === "" && !selectedImage) || loading) return;
+    if ((input.trim() === "" && !selectedImage && !selectedVideo) || loading) return;
 
     const userText = input.trim();
     const imageFile = selectedImage;
+    const videoBlob = selectedVideo;
     const previewUrl = imagePreview;
+    const videoUrl = videoPreviewUrl;
 
     setInput("");
     setSelectedImage(null);
     setImagePreview(null);
+    setSelectedVideo(null);
+    setVideoPreviewUrl(null);
     setLoading(true);
 
     setMessages((prev) => [
       ...prev,
       {
         role: "user",
-        content: userText,
+        content: userText || (videoBlob ? "🎥 فيديو إشارة" : ""),
         imageUrl: previewUrl ? `__preview__${previewUrl}` : null,
+        videoUrl: videoUrl,
         _id: Date.now(),
       },
     ]);
 
     try {
-      const data = await sendMessage(conversationId, userText, imageFile);
+      const data = await sendMessage(conversationId, userText, imageFile, videoBlob);
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: data.message, _id: data.messageId },
@@ -255,6 +322,9 @@ export default function Chat_Message() {
                     {imgSrc && (
                       <img src={imgSrc} alt="صورة مرسلة" className="chat-bubble-image" />
                     )}
+                    {msg.videoUrl && (
+                      <video src={msg.videoUrl} controls className="chat-bubble-image" />
+                    )}
                     {msg.content && <p>{msg.content}</p>}
                   </div>
                 );
@@ -279,6 +349,15 @@ export default function Chat_Message() {
             </div>
           )}
 
+          {videoPreviewUrl && (
+            <div className="chat-image-preview">
+              <video src={videoPreviewUrl} className="chat-video-preview" muted loop autoPlay playsInline />
+              <button className="chat-image-remove" onClick={clearSelectedVideo}>
+                <X size={14} />
+              </button>
+            </div>
+          )}
+
           <div className="chat-input">
             <div className="plus-wrapper">
               <button className="plus-btn" onClick={() => setShowOptions(!showOptions)}>
@@ -290,9 +369,13 @@ export default function Chat_Message() {
                     <Image size={18} />
                     <span>صورة</span>
                   </div>
-                  <div className="menu-item" onClick={openCamera}>
+                  <div className="menu-item" onClick={() => openCamera("photo")}>
                     <Camera size={18} />
                     <span>كاميرا</span>
+                  </div>
+                  <div className="menu-item" onClick={() => openCamera("video")}>
+                    <Video size={18} />
+                    <span>فيديو إشارة</span>
                   </div>
                 </div>
               )}
@@ -375,7 +458,7 @@ export default function Chat_Message() {
         <div className="camera-overlay" onClick={closeCamera}>
           <div className="camera-modal" onClick={(e) => e.stopPropagation()}>
             <div className="camera-modal-header">
-              <span>التقط إشارتك</span>
+              <span>{cameraMode === "video" ? "سجّل فيديو إشارتك (5 ثواني)" : "التقط إشارتك"}</span>
               <button className="camera-close-btn" onClick={closeCamera}>
                 <X size={18} />
               </button>
@@ -383,12 +466,53 @@ export default function Chat_Message() {
 
             {!captured ? (
               <>
-                <video ref={videoRef} autoPlay playsInline className="camera-video" />
+                <div style={{ position: "relative" }}>
+                  <video ref={videoRef} autoPlay playsInline muted className="camera-video" />
+                  {isRecording && (
+                    <div style={{
+                      position: "absolute", top: 12, right: 12,
+                      background: "rgba(220,38,38,0.95)", color: "white",
+                      padding: "6px 12px", borderRadius: 20,
+                      display: "flex", alignItems: "center", gap: 6,
+                      fontWeight: "bold", fontSize: 14,
+                    }}>
+                      <span style={{
+                        width: 10, height: 10, borderRadius: "50%",
+                        background: "white", animation: "pulse 1s infinite",
+                      }} />
+                      جاري التسجيل... {recordCountdown}s
+                    </div>
+                  )}
+                </div>
                 <canvas ref={canvasRef} style={{ display: "none" }} />
-                <button className="camera-capture-btn" onClick={capturePhoto}>
-                  <Camera size={22} />
-                  التقط صورة
-                </button>
+                {cameraMode === "video" ? (
+                  <button
+                    className="camera-capture-btn"
+                    onClick={startRecording}
+                    disabled={isRecording}
+                    style={isRecording ? { opacity: 0.6, cursor: "not-allowed" } : {}}
+                  >
+                    {isRecording ? <Square size={22} /> : <Video size={22} />}
+                    {isRecording ? `جاري التسجيل (${recordCountdown}s)` : "ابدأ التسجيل"}
+                  </button>
+                ) : (
+                  <button className="camera-capture-btn" onClick={capturePhoto}>
+                    <Camera size={22} />
+                    التقط صورة
+                  </button>
+                )}
+              </>
+            ) : cameraMode === "video" ? (
+              <>
+                <video src={captured} controls autoPlay loop className="camera-preview" />
+                <div className="camera-actions">
+                  <button className="camera-retake-btn" onClick={() => { setCaptured(null); recordedChunks.current = []; }}>
+                    إعادة التسجيل
+                  </button>
+                  <button className="camera-confirm-btn" onClick={confirmVideo}>
+                    إرسال
+                  </button>
+                </div>
               </>
             ) : (
               <>

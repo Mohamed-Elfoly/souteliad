@@ -1,13 +1,6 @@
 """
-Arabic Sign Language Recognition Service (Swin V2 - ArASL)
-Uses pavlyhalim/Arabic-Sign-Language SwinV2 model trained on ArASL dataset
-99.41% validation accuracy on 32 Arabic letter classes.
-
-Strategy:
-- Sample N frames from the uploaded video
-- Crop the hand from each frame using MediaPipe HandLandmarker
-- Run SwinV2 on each cropped hand
-- Aggregate predictions (majority vote + average confidence)
+Arabic Sign Language Recognition Service (SwinV2 - ArASL)
+99.41% accuracy on 32 Arabic letter classes.
 
 Run:
     uvicorn main:app --host 0.0.0.0 --port 8000
@@ -18,7 +11,6 @@ import io
 import json
 import tempfile
 import time
-from collections import Counter, defaultdict
 
 import cv2
 import numpy as np
@@ -43,7 +35,7 @@ DEBUG_DIR = os.path.join(os.path.dirname(__file__), "debug_logs")
 os.makedirs(DEBUG_DIR, exist_ok=True)
 
 # ---------- Config ----------
-N_SAMPLE_FRAMES = 8  # Sample 8 frames evenly across the video
+N_SAMPLE_FRAMES = 8
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"[startup] Device: {DEVICE}")
 
@@ -56,7 +48,6 @@ CLASSES = meta["classes"]
 print(f"[startup] Model: {meta['model_name']}")
 print(f"[startup] Classes: {len(CLASSES)} | Val acc: {meta.get('best_val_acc', 0):.2f}%")
 
-# English class name → (Arabic letter, English label)
 LABEL_TO_ARABIC = {
     "ain": "ع",   "al": "ال",  "aleff": "أ",  "bb": "ب",
     "dal": "د",   "dha": "ط",  "dhad": "ض",   "fa": "ف",
@@ -84,7 +75,6 @@ preprocess = transforms.Compose([
     transforms.Normalize(meta["normalize_mean"], meta["normalize_std"]),
 ])
 
-# ---------- Use simple MediaPipe Hands API (more reliable in batch mode) ----------
 mp_hands = mp.solutions.hands
 
 
@@ -102,7 +92,6 @@ def crop_hand(frame, hands_processor):
     x_min, x_max = int(min(x_coords) * w), int(max(x_coords) * w)
     y_min, y_max = int(min(y_coords) * h), int(max(y_coords) * h)
 
-    # Make square with padding (35% of larger dimension)
     cx, cy = (x_min + x_max) // 2, (y_min + y_max) // 2
     pad = int(max(x_max - x_min, y_max - y_min) * 0.35)
     half = max(x_max - x_min, y_max - y_min) // 2 + pad
@@ -115,7 +104,6 @@ def crop_hand(frame, hands_processor):
 
 
 def predict_image(img_bgr):
-    """Run SwinV2 on a single hand-cropped image. Returns (label_idx, confidence, all_probs)."""
     rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
     tensor = preprocess(rgb).unsqueeze(0).to(DEVICE)
     with torch.no_grad():
@@ -131,19 +119,7 @@ def sample_frame_indices(total_frames, n):
     return np.linspace(0, total_frames - 1, n, dtype=int).tolist()
 
 
-def process_video(video_path, debug_id=None):
-    """Read video, sample N frames, crop hands, run model on each, aggregate."""
-    if debug_id:
-        run_dir = os.path.join(DEBUG_DIR, debug_id)
-        os.makedirs(run_dir, exist_ok=True)
-        try:
-            ext = os.path.splitext(video_path)[1]
-            with open(video_path, "rb") as src, open(os.path.join(run_dir, f"input{ext}"), "wb") as dst:
-                dst.write(src.read())
-        except Exception as e:
-            print(f"[debug] Failed to copy video: {e}")
-
-    # Read ALL frames sequentially (don't trust frame count metadata on webm)
+def process_video(video_path):
     cap = cv2.VideoCapture(video_path)
     all_frames = []
     while True:
@@ -154,57 +130,31 @@ def process_video(video_path, debug_id=None):
     cap.release()
 
     total = len(all_frames)
-    print(f"[predict] Total frames (sequential read): {total}")
-
+    print(f"[predict] Total frames: {total}")
     if total == 0:
         return None
 
     indices = sample_frame_indices(total, N_SAMPLE_FRAMES)
-    print(f"[predict] Sampling {len(indices)} frames at indices: {indices}")
+    frames = [cv2.flip(all_frames[i], 1) for i in indices]
 
-    frames = []
-    for i in indices:
-        frame = cv2.flip(all_frames[i], 1)  # mirror like webcam preview
-        frames.append((i, frame))
-
-    if not frames:
-        return None
-
-    # Run hand detection + classification on each sampled frame
-    per_frame_results = []
     all_probs_accumulator = np.zeros(len(CLASSES), dtype=np.float32)
     successful = 0
 
-    with mp_hands.Hands(
-        static_image_mode=True,
-        max_num_hands=1,
-        min_detection_confidence=0.4,
-    ) as hands_processor:
-        for frame_idx, frame in frames:
+    with mp_hands.Hands(static_image_mode=True, max_num_hands=1, min_detection_confidence=0.4) as hands_processor:
+        for i, frame in zip(indices, frames):
             cropped = crop_hand(frame, hands_processor)
             if cropped is None:
-                print(f"[predict] Frame {frame_idx}: NO HAND")
+                print(f"[predict] Frame {i}: NO HAND")
                 continue
             idx, conf, probs = predict_image(cropped)
             label = CLASSES[idx]
-            arabic = LABEL_TO_ARABIC.get(label, "?")
-            print(f"[predict] Frame {frame_idx}: '{arabic}' ({label}) conf={conf:.3f}")
-            per_frame_results.append((label, arabic, conf, probs))
+            print(f"[predict] Frame {i}: '{LABEL_TO_ARABIC.get(label, '?')}' ({label}) conf={conf:.3f}")
             all_probs_accumulator += probs
             successful += 1
 
-            if debug_id:
-                # Save cropped hand image
-                cv2.imwrite(
-                    os.path.join(DEBUG_DIR, debug_id, f"hand_{frame_idx:03d}_{label}_{int(conf*100)}.jpg"),
-                    cropped,
-                )
-
     if successful == 0:
-        print("[predict] No hand detected in any frame")
         return None
 
-    # Aggregate: averaged probabilities across all successful frames
     avg_probs = all_probs_accumulator / successful
     top5_idx = np.argsort(avg_probs)[-5:][::-1].tolist()
     top5 = [
@@ -227,8 +177,7 @@ def process_video(video_path, debug_id=None):
     }
 
 
-# ---------- FastAPI ----------
-app = FastAPI(title="Arabic Sign Language Recognition (SwinV2 ArASL 99.4%)")
+app = FastAPI(title="Arabic Sign Language (SwinV2 ArASL)")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -255,17 +204,17 @@ async def predict(video: UploadFile = File(...), expected: str = Form("")):
 
     suffix = ".webm" if video.filename and video.filename.endswith(".webm") else ".mp4"
     video_bytes = await video.read()
-    print(f"[predict] Video size: {len(video_bytes)} bytes  filename={video.filename}")
+    print(f"[predict] Video size: {len(video_bytes)} bytes")
 
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
         tmp.write(video_bytes)
         tmp_path = tmp.name
 
     try:
-        result = process_video(tmp_path, debug_id=debug_id)
+        result = process_video(tmp_path)
         if result is None:
             return {
-                "error": "No hand detected in video",
+                "error": "No hand detected",
                 "predicted": None,
                 "confidence": 0.0,
                 "matches": False,
@@ -278,13 +227,8 @@ async def predict(video: UploadFile = File(...), expected: str = Form("")):
             item["sign_arabic"].strip() == expected.strip() for item in result["top5"]
         ) if expected else False
 
-        print(f"[predict] PREDICTED: '{result['predicted_arabic']}' ({result['predicted_label']}) conf={result['confidence']:.3f}")
-        print(f"[predict] Hand detected in {result['frames_with_hand']}/{result['frames_sampled']} frames")
-        print(f"[predict] TOP-5:")
-        for item in result["top5"]:
-            print(f"           {item['sign_arabic']:>4} ({item['label']:<8}) conf={item['confidence']:.3f}")
+        print(f"[predict] PREDICTED: '{result['predicted_arabic']}' conf={result['confidence']:.3f}")
         print(f"[predict] Expected='{expected}'  matches_top1={matches_top1}  matches_top5={matches_top5}")
-        print(f"[predict] Debug frames: {os.path.join(DEBUG_DIR, debug_id)}")
 
         return {
             "predicted": result["predicted_arabic"],
@@ -295,15 +239,12 @@ async def predict(video: UploadFile = File(...), expected: str = Form("")):
             "matches_top5": matches_top5,
             "top5": [
                 {
-                    "label_index": i,
                     "sign_arabic": item["sign_arabic"],
                     "sign_english": item["label"],
                     "confidence": item["confidence"],
                 }
-                for i, item in enumerate(result["top5"])
+                for item in result["top5"]
             ],
-            "frames_with_hand": result["frames_with_hand"],
-            "frames_sampled": result["frames_sampled"],
         }
     finally:
         if os.path.exists(tmp_path):
