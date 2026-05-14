@@ -3,10 +3,11 @@ import "../../styles/web.css";
 import logo from "../../assets/images/logo1.png";
 import { useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
-import { forgotPasswordApi } from "../../api/authApi";
+import { forgotPasswordApi, verifyOtpApi } from "../../api/authApi";
 
 export default function VerifyCode() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [isLoading, setIsLoading] = useState(false);
   const inputsRef = useRef([]);
   const navigate = useNavigate();
   const location = useLocation();
@@ -40,13 +41,21 @@ export default function VerifyCode() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const code = otp.join("");
     if (code.length < 6) {
       toast.error("من فضلك أدخل الرمز كاملاً");
       return;
     }
-    navigate("/reset-password", { state: { resetToken: code, email } });
+    setIsLoading(true);
+    try {
+      await verifyOtpApi(code);
+      navigate("/reset-password", { state: { resetToken: code, email } });
+    } catch (err) {
+      toast.error(err.response?.data?.message || "الرمز غير صحيح أو انتهت صلاحيته");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -63,20 +72,23 @@ export default function VerifyCode() {
               تم إرسال رمز التحقق إلى بريدك الإلكتروني من فضلك أدخل الرمز المكون من ٦ أرقام.
             </p>
 
-            <div className="otp-inputs">
+            <div className="otp-inputs" dir="ltr">
               {otp.map((digit, index) => (
                 <input
                   key={index}
                   ref={(el) => (inputsRef.current[index] = el)}
                   value={digit}
                   maxLength="1"
+                  inputMode="numeric"
                   onChange={(e) => handleChange(e, index)}
                   onKeyDown={(e) => handleKeyDown(e, index)}
                 />
               ))}
             </div>
 
-            <button className="otp-btn" onClick={handleSubmit}>تأكيد</button>
+            <button className="otp-btn" onClick={handleSubmit} disabled={isLoading}>
+              {isLoading ? "جاري التحقق..." : "تأكيد"}
+            </button>
 
             <p className="otp-resend">
               لم تستلم الرمز؟

@@ -145,6 +145,7 @@ exports.checkPermission = (permission) => (req, res, next) => {
 };
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
+  console.log('forgotPassword called for:', req.body.email);
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
     return next(new AppError('There is no user with that email address.', 404));
@@ -161,7 +162,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   // Send email via Gmail
   try {
     await transporter.sendMail({
-      from: `"صوت اليد" <${process.env.BREVO_USER}>`,
+      from: `"صوت اليد" <${process.env.BREVO_FROM || process.env.BREVO_USER}>`,
       to: user.email,
       subject: 'رمز إعادة تعيين كلمة المرور',
       html: `
@@ -190,6 +191,21 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     status: 'success',
     message: 'OTP sent to email!',
   });
+});
+
+exports.verifyOtp = catchAsync(async (req, res, next) => {
+  const { otp } = req.body;
+  if (!otp) return next(new AppError('من فضلك أدخل الرمز', 400));
+
+  const hashedToken = crypto.createHash('sha256').update(otp).digest('hex');
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  if (!user) return next(new AppError('الرمز غير صحيح أو انتهت صلاحيته', 400));
+
+  res.status(200).json({ status: 'success', message: 'OTP is valid' });
 });
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
