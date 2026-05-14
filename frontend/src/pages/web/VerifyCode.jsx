@@ -3,6 +3,7 @@ import "../../styles/web.css";
 import logo from "../../assets/images/logo1.png";
 import { useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
+import { forgotPasswordApi } from "../../api/authApi";
 
 export default function VerifyCode() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -82,7 +83,18 @@ export default function VerifyCode() {
               {countdown > 0 ? (
                 <span> إعادة الإرسال خلال {countdown} ثانية</span>
               ) : (
-                <span className="otp-resend-link" onClick={() => { setCountdown(58); toast.success("تم إعادة إرسال الرمز"); }}>
+                <span
+                  className="otp-resend-link"
+                  onClick={async () => {
+                    try {
+                      await forgotPasswordApi({ email });
+                      setCountdown(58);
+                      toast.success("تم إعادة إرسال الرمز");
+                    } catch {
+                      toast.error("حدث خطأ، حاول مرة أخرى");
+                    }
+                  }}
+                >
                   {" "}إعادة الإرسال
                 </span>
               )}

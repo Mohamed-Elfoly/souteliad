@@ -1,9 +1,19 @@
 const crypto = require('crypto');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
+
+const transporter = nodemailer.createTransport({
+  host: 'smtp-relay.brevo.com',
+  port: 587,
+  auth: {
+    user: process.env.BREVO_USER,
+    pass: process.env.BREVO_PASS,
+  },
+});
 
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -135,41 +145,68 @@ exports.checkPermission = (permission) => (req, res, next) => {
 };
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
-  // 1) Get user based on POSTed email
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
     return next(new AppError('There is no user with that email address.', 404));
   }
 
-  // 2) Generate the random reset token
-  const resetToken = user.createPasswordResetToken();
+  // Generate 6-digit OTP code
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Store hashed OTP in DB
+  user.passwordResetToken = crypto.createHash('sha256').update(otp).digest('hex');
+  user.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
   await user.save({ validateBeforeSave: false });
 
-  // 3) Log reset URL to console (email transport stubbed)
-  const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
-  console.log(`PASSWORD RESET TOKEN: ${resetURL}`);
+  // Send email via Gmail
+  try {
+    await transporter.sendMail({
+      from: `"صوت اليد" <${process.env.BREVO_USER}>`,
+      to: user.email,
+      subject: 'رمز إعادة تعيين كلمة المرور',
+      html: `
+        <div style="font-family: Arial, sans-serif; direction: rtl; text-align: right; max-width: 480px; margin: 0 auto; padding: 32px; border: 1px solid #eee; border-radius: 12px;">
+          <h2 style="color: #EB6837;">صوت اليد</h2>
+          <p>مرحباً <strong>${user.firstName}</strong>,</p>
+          <p>لقد طلبت إعادة تعيين كلمة المرور. استخدم الرمز التالي:</p>
+          <div style="font-size: 36px; font-weight: bold; letter-spacing: 10px; color: #EB6837; text-align: center; padding: 20px; background: #fff5f0; border-radius: 8px; margin: 20px 0;">
+            ${otp}
+          </div>
+          <p>هذا الرمز صالح لمدة <strong>10 دقائق</strong> فقط.</p>
+          <p>إذا لم تطلب إعادة تعيين كلمة المرور، يمكنك تجاهل هذا البريد.</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+          <p style="color: #999; font-size: 12px;">فريق صوت اليد</p>
+        </div>
+      `,
+    });
+  } catch {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    return next(new AppError('حدث خطأ في إرسال البريد الإلكتروني. حاول مرة أخرى.', 500));
+  }
 
   res.status(200).json({
     status: 'success',
-    message: 'Token sent to email!',
+    message: 'OTP sent to email!',
   });
 });
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
-  // 1) Get user based on the token
+  // 1) Hash the OTP/token from request
   const hashedToken = crypto
     .createHash('sha256')
     .update(req.params.token)
     .digest('hex');
 
+  // 2) Find user by hashed token and check expiry — also confirms user exists in DB
   const user = await User.findOne({
     passwordResetToken: hashedToken,
     passwordResetExpires: { $gt: Date.now() },
   });
 
-  // 2) If token has not expired, and there is user, set the new password
   if (!user) {
-    return next(new AppError('Token is invalid or has expired', 400));
+    return next(new AppError('الرمز غير صحيح أو انتهت صلاحيته', 400));
   }
 
   user.password = req.body.password;
