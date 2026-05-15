@@ -16,7 +16,11 @@
       "WebFetch(domain:drive.google.com)",
       "PowerShell(& \"c:\\\\Users\\\\DELL\\\\Desktop\\\\souteliad\\\\sign-service\\\\venv\\\\Scripts\\\\python.exe\" -m pip install --upgrade pip --quiet)",
       "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:8000/)",
-      "Bash(curl -L -o asl_swinv2_best.pth \"https://github.com/pavlyhalim/Arabic-Sign-Language/releases/download/v2.0/asl_swinv2_best.pth\")"
+      "Bash(curl -L -o asl_swinv2_best.pth \"https://github.com/pavlyhalim/Arabic-Sign-Language/releases/download/v2.0/asl_swinv2_best.pth\")",
+      "Bash(PYTHONIOENCODING=utf-8 \"./venv/Scripts/python.exe\" -m uvicorn main:app --host 0.0.0.0 --port 8000)",
+      "Bash(git commit -m ' *)",
+      "Bash(tail -20 /c/Users/DELL/AppData/Local/Temp/claude/c--Users-DELL-Desktop-souteliad/0be18402-84d0-4713-a7c5-c372c12ebb9c/tasks/bgmxpptxh.output 2>/dev/null)",
+      "Read(//c/Users/DELL/AppData/Local/Temp/claude/c--Users-DELL-Desktop-souteliad/0be18402-84d0-4713-a7c5-c372c12ebb9c/tasks/**)"
     ]
   }
 }

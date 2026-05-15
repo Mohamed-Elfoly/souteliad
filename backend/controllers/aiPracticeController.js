@@ -24,11 +24,12 @@ exports.evaluateSign = catchAsync(async (req, res, next) => {
     );
   }
 
-  // Real AI analysis: Python HF service first, Gemini Vision fallback
+  // Real AI analysis: routes based on expectedType (letter→SwinV2, others→Gemini)
   const aiResult = await analyzeSign(
     req.file.buffer,
     question.expectedSign,
-    req.file.mimetype
+    req.file.mimetype,
+    question.expectedType || 'letter'
   );
 
   const result = await AIPracticeResult.create({
@@ -46,6 +47,7 @@ exports.evaluateSign = catchAsync(async (req, res, next) => {
       questionId: question._id,
       questionText: question.questionText,
       expectedSign: aiResult.expectedSign,
+      expectedType: aiResult.expectedType,
       detected: aiResult.detected,
       accuracy: aiResult.accuracy,
       passed: aiResult.passed,
