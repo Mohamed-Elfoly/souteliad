@@ -27,6 +27,18 @@ const normalizeUrl = (url) => {
   return url;
 };
 
+// Derive a thumbnail image from a YouTube or Google Drive video URL
+const thumbnailFromVideoUrl = (videoUrl) => {
+  if (!videoUrl) return null;
+  const ytMatch = videoUrl.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([^&\n?#]+)/);
+  if (ytMatch) return `https://i.ytimg.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+  const driveFileMatch = videoUrl.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (driveFileMatch) return `https://drive.google.com/thumbnail?id=${driveFileMatch[1]}&sz=w800`;
+  const driveIdMatch = videoUrl.match(/drive\.google\.com\/(?:open|uc)\?id=([a-zA-Z0-9_-]+)/);
+  if (driveIdMatch) return `https://drive.google.com/thumbnail?id=${driveIdMatch[1]}&sz=w800`;
+  return null;
+};
+
 function StarDisplay({ rating }) {
   const rounded = Math.round(rating * 2) / 2;
   return (
@@ -99,10 +111,11 @@ export default function Lessons() {
       <div className="progress-card">
         <img
           className="progress-card-img"
-          src={nextLesson?.thumbnailUrl || lessonpage}
+          src={normalizeUrl(nextLesson?.thumbnailUrl) || thumbnailFromVideoUrl(nextLesson?.videoUrl) || lessonpage}
           alt="next lesson"
           loading="lazy"
           decoding="async"
+          onError={(e) => { e.currentTarget.src = lessonpage; }}
         />
         <div className="progress-card-body">
           <div>
@@ -186,10 +199,15 @@ export default function Lessons() {
                 {/* Thumbnail */}
                 <div className="lesson-card-thumb">
                   <img
-                    src={normalizeUrl(lesson.thumbnailUrl) || FALLBACK_THUMBS[index % FALLBACK_THUMBS.length]}
+                    src={
+                      normalizeUrl(lesson.thumbnailUrl)
+                        || thumbnailFromVideoUrl(lesson.videoUrl)
+                        || FALLBACK_THUMBS[index % FALLBACK_THUMBS.length]
+                    }
                     alt={lesson.title}
                     loading="lazy"
                     decoding="async"
+                    onError={(e) => { e.currentTarget.src = FALLBACK_THUMBS[index % FALLBACK_THUMBS.length]; }}
                   />
                   {isCompleted && (
                     <div className="lesson-done-overlay">
