@@ -27,9 +27,11 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", line_bufferin
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", line_buffering=True)
 
 # ---------- Paths ----------
-MODELS_DIR = os.path.join(os.path.dirname(__file__), "models")
-MODEL_PATH = os.path.join(MODELS_DIR, "asl_swinv2_best.pth")
-META_PATH = os.path.join(MODELS_DIR, "asl_swinv2_meta.json")
+# In production (Railway), MODEL_PATH is set to /models/asl_swinv2_best.pth (volume mount)
+# In dev, defaults to ./models/asl_swinv2_best.pth
+LOCAL_MODELS_DIR = os.path.join(os.path.dirname(__file__), "models")
+MODEL_PATH = os.environ.get("MODEL_PATH", os.path.join(LOCAL_MODELS_DIR, "asl_swinv2_best.pth"))
+META_PATH = os.environ.get("META_PATH", os.path.join(LOCAL_MODELS_DIR, "asl_swinv2_meta.json"))
 
 DEBUG_DIR = os.path.join(os.path.dirname(__file__), "debug_logs")
 os.makedirs(DEBUG_DIR, exist_ok=True)
