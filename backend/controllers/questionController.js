@@ -10,6 +10,8 @@ exports.setQuizId = (req, res, next) => {
 
 exports.setFilterObj = (req, res, next) => {
   if (req.params.quizId) req.filterObj = { quizId: req.params.quizId };
+  // Default sort: by manual order field, then by creation time (oldest first)
+  if (!req.query.sort) req.query.sort = 'order,createdAt';
   next();
 };
 
