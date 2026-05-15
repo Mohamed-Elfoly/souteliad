@@ -195,10 +195,12 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     });
   } catch (err) {
     console.error('[forgotPassword] Email send failed:', err.message);
+    console.error('[forgotPassword] Full error:', err);
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
-    return next(new AppError('حدث خطأ في إرسال البريد الإلكتروني. حاول مرة أخرى.', 500));
+    // Temporarily expose error for debugging on Railway
+    return next(new AppError(`فشل إرسال البريد: ${err.message}`, 500));
   }
 
   res.status(200).json({
