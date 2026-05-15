@@ -20,6 +20,23 @@ const normalizeUrl = (url) => {
   return url;
 };
 
+// Derive a thumbnail image from a YouTube or Google Drive video URL
+const thumbnailFromVideoUrl = (videoUrl) => {
+  if (!videoUrl) return null;
+
+  // YouTube — use hqdefault.jpg (always available)
+  const ytMatch = videoUrl.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([^&\n?#]+)/);
+  if (ytMatch) return `https://i.ytimg.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+
+  // Google Drive — use Drive's thumbnail endpoint
+  const driveFileMatch = videoUrl.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (driveFileMatch) return `https://drive.google.com/thumbnail?id=${driveFileMatch[1]}&sz=w800`;
+  const driveIdMatch = videoUrl.match(/drive\.google\.com\/(?:open|uc)\?id=([a-zA-Z0-9_-]+)/);
+  if (driveIdMatch) return `https://drive.google.com/thumbnail?id=${driveIdMatch[1]}&sz=w800`;
+
+  return null;
+};
+
 function StarRating({ lessonId, avgRating, numRatings }) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -189,8 +206,9 @@ export default function Learnnow() {
   className="learnnow-hero-thumb thumbnail-box"
 >
   <img
-    src={normalizeUrl(lesson.thumbnailUrl)}
+    src={normalizeUrl(lesson.thumbnailUrl) || thumbnailFromVideoUrl(lesson.videoUrl) || levelone}
     alt={lesson?.title || "lesson thumbnail"}
+    onError={(e) => { e.currentTarget.src = levelone; }}
   />
 
   {isCompleted && (

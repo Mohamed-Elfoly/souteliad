@@ -7,6 +7,13 @@ export const Q_TYPES = [
   { value: "ai-practice", label: "تدريب AI" },
 ];
 
+export const EXPECTED_TYPES = [
+  { value: "letter", label: "حرف", placeholder: "مثال: أ، ب، ت..." },
+  { value: "number", label: "رقم", placeholder: "مثال: 1، 5، 100..." },
+  { value: "word", label: "كلمة", placeholder: "مثال: مرحبا، شكراً..." },
+  { value: "sentence", label: "جملة", placeholder: "مثال: كيف حالك؟" },
+];
+
 export function makeQuestion() {
   return {
     id: crypto.randomUUID(),
@@ -15,6 +22,7 @@ export function makeQuestion() {
     marks: 1,
     imageUrl: "",
     expectedSign: "",
+    expectedType: "letter",
     options: [
       { text: "", isCorrect: true },
       { text: "", isCorrect: false },
@@ -190,15 +198,41 @@ export default function QuestionCard({ q, idx, onChange, onDelete }) {
           <p className="text-purple-600 text-sm">
             سيتم تقييم إجابة الطالب تلقائياً بواسطة الذكاء الاصطناعي
           </p>
+
+          {/* Expected type selector */}
+          <div>
+            <label className="block text-xs text-gray-500 mb-1.5">نوع الإشارة المتوقعة</label>
+            <div className="flex gap-1.5 bg-white p-1 rounded-lg border border-purple-200">
+              {EXPECTED_TYPES.map((t) => (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => onChange({ ...q, expectedType: t.value, expectedSign: "" })}
+                  className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    (q.expectedType || "letter") === t.value
+                      ? "bg-purple-500 text-white shadow-sm"
+                      : "text-gray-500 hover:bg-purple-100"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Expected sign input */}
           <div>
             <label className="block text-xs text-gray-500 mb-1">
               الإشارة المتوقعة{" "}
-              <span className="text-gray-400">(الكلمة أو الحرف المطلوب)</span>
+              <span className="text-gray-400">(القيمة المطلوبة)</span>
             </label>
             <input
               type="text"
               className="w-full border border-purple-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-400 bg-white"
-              placeholder="مثال: مرحبا، أ، شكراً..."
+              placeholder={
+                EXPECTED_TYPES.find((t) => t.value === (q.expectedType || "letter"))?.placeholder
+                || "مثال: أ، 1، مرحبا..."
+              }
               value={q.expectedSign}
               onChange={(e) => onChange({ ...q, expectedSign: e.target.value })}
             />

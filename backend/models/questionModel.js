@@ -45,6 +45,11 @@ const questionSchema = new mongoose.Schema({
       return this.questionType === 'ai-practice';
     },
   },
+  expectedType: {
+    type: String,
+    enum: ['letter', 'number', 'word', 'sentence'],
+    default: 'letter',
+  },
   imageUrl: {
     type: String,
   },

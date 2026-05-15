@@ -1,3 +1,5 @@
+const path = require('path');
+const fs = require('fs');
 const cloudinary = require('cloudinary').v2;
 
 cloudinary.config({
@@ -6,8 +8,31 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadImage = (fileBuffer, folder) =>
-  new Promise((resolve, reject) => {
+const isDev = process.env.NODE_ENV !== 'production';
+
+// In development: save to public/uploads/{folder}/
+// In production: upload to Cloudinary
+const uploadImage = (fileBuffer, folder) => {
+  if (isDev) {
+    return new Promise((resolve, reject) => {
+      try {
+        const uploadDir = path.join(__dirname, '..', 'public', 'uploads', folder);
+        if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+        const filename = `${folder}-${Date.now()}.jpg`;
+        const filepath = path.join(uploadDir, filename);
+        fs.writeFileSync(filepath, fileBuffer);
+
+        // Return a local URL the frontend can access
+        resolve(`/uploads/${folder}/${filename}`);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  // Production: Cloudinary
+  return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       { folder, resource_type: 'image' },
       (error, result) => {
@@ -17,5 +42,6 @@ const uploadImage = (fileBuffer, folder) =>
     );
     stream.end(fileBuffer);
   });
+};
 
 module.exports = { uploadImage };

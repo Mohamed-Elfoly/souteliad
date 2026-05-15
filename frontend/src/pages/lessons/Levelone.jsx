@@ -7,8 +7,21 @@ import "../../styles/levelone.css";
 
 function getVideoEmbed(url) {
   if (!url) return null;
+
+  // YouTube
   const ytMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([^&\n?#]+)/);
   if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+
+  // Google Drive — accept any of these forms:
+  //   https://drive.google.com/file/d/FILE_ID/view
+  //   https://drive.google.com/file/d/FILE_ID/preview
+  //   https://drive.google.com/open?id=FILE_ID
+  //   https://drive.google.com/uc?id=FILE_ID
+  const driveFileMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (driveFileMatch) return `https://drive.google.com/file/d/${driveFileMatch[1]}/preview`;
+  const driveIdMatch = url.match(/drive\.google\.com\/(?:open|uc)\?id=([a-zA-Z0-9_-]+)/);
+  if (driveIdMatch) return `https://drive.google.com/file/d/${driveIdMatch[1]}/preview`;
+
   return null; // direct file URL — use <video> tag
 }
 
@@ -65,14 +78,18 @@ export default function Levelone() {
             <iframe
               src={getVideoEmbed(lesson.videoUrl)}
               title={lesson?.title || "lesson video"}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
               allowFullScreen
+              webkitallowfullscreen="true"
+              mozallowfullscreen="true"
               className="video-iframe"
             />
           ) : (
             <video
               src={lesson.videoUrl}
               controls
+              controlsList="nodownload"
+              playsInline
               className="video-iframe"
             />
           )

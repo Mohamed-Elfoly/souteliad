@@ -1428,13 +1428,19 @@ border-radius: 20px;
   margin: 8px auto 0;
 }
 
-.chat-image-preview img {
+.chat-image-preview img,
+.chat-video-preview {
   height: 72px;
   width: 72px;
   object-fit: cover;
   border-radius: 10px;
   border: 2px solid #EB6837;
   display: block;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 .chat-image-remove {

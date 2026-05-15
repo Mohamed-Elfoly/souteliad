@@ -21,3 +21,12 @@ export const deleteQuestion = (quizId, questionId) =>
 export const submitQuizAttempt = (data) => api.post('/quiz-attempts', data);
 
 export const getMyAttempts = () => api.get('/quiz-attempts/my-attempts');
+
+export const submitAiPractice = (questionId, videoBlob) => {
+  const formData = new FormData();
+  formData.append('video', videoBlob, 'sign.webm');
+  return api.post(`/ai-practice/${questionId}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 60000,
+  });
+};

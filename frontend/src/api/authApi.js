@@ -7,6 +7,9 @@ export const signupApi = (data) => api.post('/users/signup', data);
 export const forgotPasswordApi = (data) =>
   api.post('/users/forgotPassword', data);
 
+export const verifyOtpApi = (otp) =>
+  api.post('/users/verifyOtp', { otp });
+
 export const resetPasswordApi = (token, data) =>
   api.patch(`/users/resetPassword/${token}`, data);
 
