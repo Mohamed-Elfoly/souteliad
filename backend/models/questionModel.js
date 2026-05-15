@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const questionSchema = new mongoose.Schema({
+  order: {
+    type: Number,
+    default: 0,
+  },
   questionText: {
     type: String,
     required: [true, 'A question must have text'],
@@ -58,9 +62,9 @@ const questionSchema = new mongoose.Schema({
     ref: 'Quiz',
     required: [true, 'A question must belong to a quiz'],
   },
-});
+}, { timestamps: true });
 
-questionSchema.index({ quizId: 1 });
+questionSchema.index({ quizId: 1, order: 1, createdAt: 1 });
 
 const Question = mongoose.model('Question', questionSchema);
 
