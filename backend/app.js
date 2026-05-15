@@ -42,11 +42,21 @@ app.use(helmet());
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
   : [];
+const allowAll = allowedOrigins.includes('*');
+
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow Postman and server-to-server calls (no origin)
-      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+      // No-origin requests (Postman, server-to-server, mobile apps) → always allow
+      if (!origin) return callback(null, true);
+      // Wildcard mode → allow all
+      if (allowAll) return callback(null, true);
+      // Exact match
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      // Any *.railway.app subdomain → allow (handy for preview deploys)
+      if (/^https?:\/\/[a-z0-9-]+\.up\.railway\.app$/i.test(origin)) return callback(null, true);
+      // Localhost in any port → allow (dev convenience)
+      if (/^https?:\/\/localhost(:\d+)?$/i.test(origin)) return callback(null, true);
       callback(new Error(`CORS: ${origin} not allowed`));
     },
     credentials: true,
