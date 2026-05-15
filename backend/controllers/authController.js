@@ -1,19 +1,33 @@
 const crypto = require('crypto');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp-relay.brevo.com',
-  port: 587,
-  auth: {
-    user: process.env.BREVO_USER,
-    pass: process.env.BREVO_PASS,
-  },
-});
+// Send email via Brevo HTTP API (works when SMTP ports are blocked)
+const sendBrevoEmail = async ({ to, subject, html, fromName = 'صوت اليد' }) => {
+  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'api-key': process.env.BREVO_API_KEY,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      sender: { name: fromName, email: process.env.BREVO_FROM },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+    }),
+  });
+
+  if (!response.ok) {
+    const errBody = await response.text();
+    throw new Error(`Brevo HTTP ${response.status}: ${errBody}`);
+  }
+  return response.json();
+};
 
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -159,10 +173,9 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   user.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
   await user.save({ validateBeforeSave: false });
 
-  // Send email via Gmail
+  // Send email via Brevo HTTP API
   try {
-    await transporter.sendMail({
-      from: `"صوت اليد" <${process.env.BREVO_FROM || process.env.BREVO_USER}>`,
+    await sendBrevoEmail({
       to: user.email,
       subject: 'رمز إعادة تعيين كلمة المرور',
       html: `
@@ -180,7 +193,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
         </div>
       `,
     });
-  } catch {
+  } catch (err) {
+    console.error('[forgotPassword] Email send failed:', err.message);
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
     await user.save({ validateBeforeSave: false });
