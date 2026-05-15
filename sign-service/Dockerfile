@@ -14,12 +14,17 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir timm torchvision
 
-# Copy app code (excluding venv/models via .dockerignore)
+# Copy app code
 COPY . .
 
-# Model is loaded from /models (Railway Volume mounted at runtime)
-# DO NOT COPY the .pth file into the image — it's huge and loaded externally
-ENV MODEL_PATH=/models/asl_swinv2_best.pth
+# Download the model to /app/models during the build (no volume needed)
+RUN mkdir -p /app/models && \
+    curl -L -o /app/models/asl_swinv2_best.pth \
+    https://github.com/pavlyhalim/Arabic-Sign-Language/releases/download/v2.0/asl_swinv2_best.pth
+
+# Default paths point to the baked-in model
+ENV MODEL_PATH=/app/models/asl_swinv2_best.pth
+ENV META_PATH=/app/models/asl_swinv2_meta.json
 
 ENV PORT=8000
 EXPOSE 8000
