@@ -358,7 +358,7 @@ export default function Quiz() {
                 <div className="w-full max-w-[1200px] mx-auto flex justify-between items-center gap-15 flex-row-reverse flex-wrap px-5">
 
                   {/* Instructions */}
-                  <div className="flex flex-col items-end gap-2.5 flex-1 text-right">
+                  <div className="flex flex-col items-start gap-2.5 flex-1 text-right" dir="rtl">
                     <p className="text-lg font-medium text-[#373D41] mb-2.5">
                       قم بأداء الإشارة المطلوبة أمام الكاميرا.
                     </p>
